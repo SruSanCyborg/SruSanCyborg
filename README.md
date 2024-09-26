@@ -35,6 +35,4 @@
 </p>
 
 
-<div align="center">
-  <img src="/snake.svg" width="80%">
-  </br>
+![snake gif](https://github.com/SruSanCyborg/SruSanCyborg/blob/output/github-contribution-grid-snake.gif)
