@@ -23,7 +23,7 @@
 
 <h3 align="left">Languages and Tools:</h3>
 <p align="left"> <img src="https://skillicons.dev/icons?i=python,unity,html,css,vscode,github" />
-    <img src="https://skillicons.dev/icons?i=javascript,blender,express,java,nextjs,mysql" /><br> </p>
+    <img src="https://skillicons.dev/icons?i=javascript,blender,cpp,java,mysql" /><br> </p>
 
 <br>
 <div align="center">
@@ -33,3 +33,8 @@
  <p><img align="center" src="https://github-readme-stats.vercel.app/api/top-langs?username=srusancyborg&show_icons=true&locale=en&layout=compact" alt="srusancyborg" /></p>
 </div>
 </p>
+
+
+<div align="center">
+  <img src="/snake.svg" width="80%">
+  </br>
