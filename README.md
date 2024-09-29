@@ -12,7 +12,7 @@
 
 - 🌱 I’m currently learning **JavaScript**
 
-- 💬 Ask me about **Frontend and AI**
+- 💬 Ask me about **Frontend**
 
 - 📫 How to reach me **sanjaysivakumar71@gmail.com**
 
