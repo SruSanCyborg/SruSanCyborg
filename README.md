@@ -10,9 +10,9 @@
 
 <p align="left"> <a href="https://twitter.com/" target="blank"><img src="https://img.shields.io/twitter/follow/?logo=twitter&style=for-the-badge" alt="" /></a> </p>
 
-- 🌱 I’m currently learning **JavaScript**
+- 🌱 I’m currently learning **DOCKER**
 
-- 💬 Ask me about **Frontend**
+- 💬 Ask me about **AI GOVERNANCE**
 
 - 📫 How to reach me **sanjaysivakumar71@gmail.com**
 
