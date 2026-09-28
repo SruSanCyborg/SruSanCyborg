@@ -206,7 +206,7 @@ def invader(x, y, px=3, color="#a78bfa", frame=0):
                    for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "X")
 
 
-def arcade_doc(w, h, body, css, title):
+def arcade_doc(w, h, body, css, title, scan=True, radius=18):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{html.escape(title)}">'
             f'<title>{html.escape(title)}</title><style>{fontface("Mono", "mono.woff2")}{fontface("MonoB", "monob.woff2")}'
             f'{fontface("Pixel", "pixel.woff2")}'
@@ -217,15 +217,21 @@ def arcade_doc(w, h, body, css, title):
             '<defs><pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="#ffffff" opacity=".035"/></pattern>'
             '<radialGradient id="blob" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#6b7280"/><stop offset=".35" stop-color="#1f2937"/>'
             '<stop offset="1" stop-color="#000"/></radialGradient>'
-            '<radialGradient id="lens" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#3f3f46"/><stop offset="1" stop-color="#050505"/></radialGradient></defs>'
-            f'<rect width="{w}" height="{h}" rx="18" fill="#050505"/>{body}<rect width="{w}" height="{h}" rx="18" fill="url(#scan)"/>'
-            f'<rect x="1.5" y="1.5" width="{w - 3}" height="{h - 3}" rx="17" fill="none" stroke="#27272a" stroke-width="3"/></svg>')
+            '<radialGradient id="lens" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#3f3f46"/><stop offset="1" stop-color="#050505"/></radialGradient>'
+            '<linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#67e8f9"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient>'
+            '<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="22"/></filter>'
+            '<radialGradient id="disc" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#1c1c26"/><stop offset="1" stop-color="#07070b"/></radialGradient></defs>'
+            + (f'<rect width="{w}" height="{h}" rx="{radius}" fill="#050505"/>{body}<rect width="{w}" height="{h}" rx="{radius}" fill="url(#scan)"/>'
+             f'<rect x="1.5" y="1.5" width="{w - 3}" height="{h - 3}" rx="{radius - 1}" fill="none" stroke="#27272a" stroke-width="3"/></svg>' if scan
+             else f'{body}</svg>'))
 
 
-def stars(w, h, n=30, seed=7):
+def stars(w, h, n=30, seed=7, avoid=None):
     out = ""
     for k in range(n):
         sx, sy = (k * 97 + seed * 13) % (w - 40) + 20, (k * 53 + seed * 29) % (h - 40) + 20
+        if avoid and any(x1 <= sx <= x2 and y1 <= sy <= y2 for x1, y1, x2, y2 in avoid):
+            continue
         out += f'<rect class="star" style="animation-delay:{(k % 9) * .27:.2f}s" x="{sx}" y="{sy}" width="2" height="2" fill="#e5e7eb"/>'
     return out
 
@@ -240,7 +246,7 @@ def hero(cfg, s):
         shown.append(r); used += len(r) + 3
     specs = [(f"> {lines[0]}", 26, "#fafafa", "monob"), (f"> {lines[1]}", 18, "#4ade80", "mono"),
              ("> ls ~/projects", 18, "#a1a1aa", "mono"), (" · ".join(shown), 15, "#67e8f9", "mono")]
-    css, body = [], stars(w, h, 34)
+    css, body = [], stars(w, h, 34, avoid=[(30, 30, 580, 270), (520, 250, 830, 310)])
     body += f'<text x="44" y="56" font-size="15" class="mono" style="fill:#d4d4d8;letter-spacing:6px">{html.escape(cfg.get("site", "").upper())}</text>'
     t0, y = 0.4, 110
     for i, (txt, size, col, cls) in enumerate(specs):
@@ -265,85 +271,25 @@ def hero(cfg, s):
         line = f"> open {r['name']}" + (f" · {r['lang']}" if r["lang"] != "code" else "") + star
         body += f'<text class="pr{k} mono" x="44" y="{y + 34}" font-size="15" style="fill:#fde047">{html.escape(line)}</text>'
     body += f'<rect class="cur" x="44" y="{y + 48}" width="11" height="18" fill="#4ade80"/>'
-    # SA monogram with morphing liquid blobs (after the LinkedIn banner)
+    # SA logo in a glowing orb: drifting colour glow, gradient ring with a rotating arc, orbiting dot
     cx, cy = 690, 150
-    blobs = [
-        ("M612 96 C590 70 600 44 628 50 C652 56 650 84 636 96 C628 104 620 104 612 96 Z", "M608 98 C584 76 596 40 630 46 C660 52 654 88 638 100 C628 108 616 106 608 98 Z", 7),
-        ("M760 90 C770 60 808 54 816 80 C824 106 800 120 780 114 C766 110 756 104 760 90 Z", "M756 94 C764 56 812 50 820 82 C826 112 796 124 776 116 C760 110 752 106 756 94 Z", 9),
-        ("M748 212 C770 206 790 226 778 246 C766 264 740 256 736 238 C733 226 738 216 748 212 Z", "M744 208 C774 200 796 228 780 250 C764 270 734 258 732 236 C730 222 736 212 744 208 Z", 8),
-        ("M618 226 C604 226 596 240 606 250 C616 260 632 252 630 240 C629 232 625 226 618 226 Z", "M620 222 C600 224 592 244 606 254 C620 264 636 252 634 238 C632 228 628 222 620 222 Z", 6)]
-    for a, b, d in blobs:
-        body += (f'<path d="{a}" fill="url(#blob)" stroke="#52525b" stroke-width="1"><animate attributeName="d" values="{a};{b};{a}" dur="{d}s" repeatCount="indefinite"/></path>')
-    body += (f'<circle cx="{cx}" cy="{cy}" r="72" fill="url(#lens)" stroke="#3f3f46" stroke-width="2"/>'
-             f'<circle cx="{cx}" cy="{cy}" r="72" fill="none" stroke="#fafafa" stroke-opacity=".08" stroke-width="10"/>'
-             f'<path d="M{cx - 30} {cy - 58} A64 64 0 0 1 {cx + 44} {cy - 44}" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="4" stroke-linecap="round"/>'
-             f'<image href="data:image/png;base64,{logo_b64("white")}" x="{cx - 49}" y="{cy - 24}" width="98" height="48"/>')
+    spin = lambda d, rev=False: (f'<animateTransform attributeName="transform" type="rotate" from="{360 if rev else 0} {cx} {cy}" '
+                                 f'to="{0 if rev else 360} {cx} {cy}" dur="{d}s" repeatCount="indefinite"/>')
+    body += (f'<g opacity=".85">{spin(14)}<circle cx="{cx - 34}" cy="{cy - 20}" r="54" fill="#67e8f9" filter="url(#glow)"/>'
+             f'<circle cx="{cx + 36}" cy="{cy + 22}" r="54" fill="#a78bfa" filter="url(#glow)"/><circle cx="{cx + 20}" cy="{cy - 40}" r="38" fill="#f472b6" filter="url(#glow)"/></g>'
+             f'<circle cx="{cx}" cy="{cy}" r="96" fill="none" stroke="#3f3f46" stroke-width="1" stroke-dasharray="2 8"><animateTransform attributeName="transform" type="rotate" from="360 {cx} {cy}" to="0 {cx} {cy}" dur="40s" repeatCount="indefinite"/></circle>'
+             f'<circle cx="{cx}" cy="{cy}" r="74" fill="url(#disc)"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="74" fill="none" stroke="url(#ring)" stroke-width="1.5" stroke-opacity=".45"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="74" fill="none" stroke="url(#ring)" stroke-width="3.5" stroke-linecap="round" '
+             f'stroke-dasharray="120 345">{spin(6)}</circle>'
+             f'<g>{spin(10, True)}<circle cx="{cx + 96}" cy="{cy}" r="4" fill="#67e8f9"/><circle cx="{cx + 96}" cy="{cy}" r="9" fill="#67e8f9" opacity=".25"/></g>'
+             f'<image href="data:image/png;base64,{logo_b64("white")}" x="{cx - 52}" y="{cy - 26}" width="104" height="51"/>')
     for k, (ix, iy, col, d) in enumerate(((470, 34, "#a78bfa", 0), (520, 276, "#f472b6", .6))):
         css.append(f"@keyframes bob{k}{{0%,100%{{transform:translateY(0)}}50%{{transform:translateY(-8px)}}}}.bob{k}{{animation:bob{k} 1.4s ease-in-out {d}s infinite}}")
         body += f'<g class="bob{k}">{invader(ix, iy, 2.6, col)}</g>'
     body += (f'<text x="{w - 44}" y="{h - 48}" font-size="21" class="mono" text-anchor="end" style="fill:#fafafa;letter-spacing:1px">_{html.escape(cfg["name"])}</text>'
              f'<text x="{w - 44}" y="{h - 26}" font-size="12" class="mono" text-anchor="end" style="fill:#a1a1aa;letter-spacing:2px">{html.escape(cfg["links"]["email"])}</text>')
     return arcade_doc(w, h, body, "".join(css), f"{cfg['name']}: " + "; ".join(lines))
-
-
-def now(cfg, s):
-    h = 190
-    items = list(cfg["now"].items())[:3]
-    b = t(W / 2, 46, "right now", 30, INK, "middle") + squiggle(W / 2 - 70, W / 2 + 70, 58, BLUE, 4)
-    cw = 250
-    for i, (k, v) in enumerate(items):
-        x = 38 + i * (cw + 24)
-        r = [-2.5, 1.8, -1.6][i]
-        b += (f'<g class="pop" style="animation-delay:{.3 + i * .25}s"><g style="--r:{r}deg;transform-box:fill-box;transform-origin:50% 0;animation:sway {5 + i}s ease-in-out infinite">'
-              f'<rect x="{x}" y="78" width="{cw}" height="92" rx="6" fill="{NOTE[i]}" stroke="{INK}" stroke-width="2.3" filter="url(#wob)"/>'
-              f'<rect x="{x + cw / 2 - 26}" y="70" width="52" height="16" fill="#ffffffaa" stroke="#00000022"/>'
-              f'{t(x + 18, 104, k, 17, MUTED)}' + "".join(t(x + 18, 132 + j * 24, ln, 20 if len(v) < 24 else 18) for j, ln in enumerate(wrap(v, 24)[:2])) + '</g></g>')
-    return doc(h, b, title="Right now: " + "; ".join(f"{k}: {v}" for k, v in items))
-
-
-def flame(x, y):
-    return (f'<g transform="translate({x} {y})"><g class="flame">'
-            f'<path d="M0 -38 C18 -18 26 -4 16 12 C10 22 -10 22 -16 12 C-26 -4 -12 -14 -6 -26 C-4 -14 4 -10 6 -16 C8 -24 4 -30 0 -38 Z" '
-            f'fill="#fb923c" stroke="{INK}" stroke-width="2.4"/><path d="M0 -6 C8 2 8 12 0 14 C-8 12 -8 2 0 -6 Z" fill="#fde047"/></g></g>')
-
-
-def stats(cfg, s):
-    h = 290
-    css = """.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flick .9s ease-in-out infinite alternate}
-@keyframes flick{0%{transform:scale(1,1) rotate(-3deg)}100%{transform:scale(1.08,.94) rotate(3deg)}}"""
-    b = t(40, 52, "report card", 30) + squiggle(42, 190, 64, GREEN, 4) + t(W - 40, 52, f"since {s['since']} · updates daily", 17, MUTED, "end")
-    big = [("contributions", f"{s['total']:,}", "all time", NOTE[1]), ("current streak", f"{s['streak']}", "days", NOTE[5]),
-           ("longest streak", f"{s['longest']}", "days", NOTE[0]), ("stars earned", f"{s['stars']}", "★ on public repos", NOTE[4])]
-    cw = 180
-    for i, (lab, val, sub, col) in enumerate(big):
-        x = 40 + i * (cw + 17)
-        b += (f'<g class="pop" style="animation-delay:{.2 + i * .2}s">'
-              f'<rect x="{x}" y="88" width="{cw}" height="118" rx="14" fill="{col}" stroke="{INK}" stroke-width="2.3" filter="url(#wob)"/>'
-              f'{t(x + cw / 2, 116, lab, 18, MUTED, "middle")}{t(x + cw / 2, 164, val, 46, INK, "middle")}{t(x + cw / 2, 192, sub, 16, MUTED, "middle")}</g>')
-        if i == 1:
-            b += flame(x + cw - 12, 92)
-    small = [(f"{s['commits_year']:,}", "commits this year"), (f"{s['prs']}", "pull requests"), (f"{s['repos']}", "public repos"), (f"{s['followers']}", "followers")]
-    for i, (val, lab) in enumerate(small):
-        x = 40 + i * (cw + 17)
-        b += f'<g class="pop" style="animation-delay:{1 + i * .15}s">{t(x + 8, 246, val, 26, BLUE)}{t(x + 8 + len(val) * 13 + 10, 246, lab, 18, MUTED)}</g>'
-    return doc(h, b, css, title=f"{s['total']} contributions, {s['streak']}-day streak, longest {s['longest']}, {s['stars']} stars")
-
-
-def languages(cfg, s):
-    langs = s["langs"]
-    h = 110 + 44 * len(langs)
-    css = "".join(f".bar{i}{{transform-box:fill-box;transform-origin:0 50%;animation:grow 1.1s cubic-bezier(.2,.8,.2,1) {.3 + i * .15}s both}}"
-                  for i in range(len(langs))) + "@keyframes grow{from{transform:scaleX(0)}}"
-    b = t(40, 52, "what I write in", 30) + squiggle(42, 250, 64, RED, 4) + t(W - 40, 52, "by code size, public repos", 17, MUTED, "end")
-    mx = max(p for _, p, _ in langs) or 1
-    for i, (n, p, col) in enumerate(langs):
-        y = 96 + i * 44
-        bw = 520 * p / mx
-        b += t(40, y + 22, n, 21)
-        b += (f'<g class="bar{i}"><rect x="200" y="{y}" width="{bw:.0f}" height="30" rx="8" fill="{col}" stroke="{INK}" stroke-width="2.2" filter="url(#wob)"/>'
-              + "".join(f'<path d="M{200 + k} {y + 28} l12 -26" stroke="#ffffff66" stroke-width="3"/>' for k in range(10, int(bw) - 10, 16)) + "</g>")
-        b += f'<g class="pop" style="animation-delay:{1 + i * .15}s">{t(210 + bw + 8, y + 22, f"{p * 100:.0f}%", 19, MUTED)}</g>'
-    return doc(h, b, css, title="Languages: " + ", ".join(f"{n} {p * 100:.0f}%" for n, p, _ in langs))
 
 
 def pixel_ship(x, y, px=3, color="#f472b6"):
@@ -366,9 +312,7 @@ def calendar(cfg, s):
     n = len(weeks)
     step = cell + gap
     ship_y = 208
-    css = [fontface("Pixel", "pixel.woff2"),
-           ".px{font-family:'Pixel','Press Start 2P',monospace}",
-           f".ship{{animation:fly {T}s linear infinite}}@keyframes fly{{0%{{transform:translateX(0)}}{END}%,100%{{transform:translateX({(n - 1) * step:.1f}px)}}}}",
+    css = [f".ship{{animation:fly {T}s linear infinite}}@keyframes fly{{0%{{transform:translateX(0)}}{END}%,100%{{transform:translateX({(n - 1) * step:.1f}px)}}}}",
            ".star{animation:twinkle 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}",
            f"@keyframes clear{{0%,{END + 1}%{{opacity:0}}{END + 2}%,{END + 4}%{{opacity:1}}{END + 5}%,100%{{opacity:0}}}}.clear{{opacity:0;animation:clear {T}s linear infinite}}"]
     b = f'<rect x="10" y="10" width="{W - 20}" height="{h - 20}" rx="16" fill="#0b1026"/>'
@@ -414,64 +358,142 @@ def calendar(cfg, s):
     b += (f'<rect x="30" y="{h - 34}" width="{W - 60}" height="2" fill="#312e81"/>'
           f'<text x="44" y="{h - 16}" font-size="9" class="px" style="fill:#a5b4fc">1UP SRUSAN</text>'
           f'<text x="{W - 44}" y="{h - 16}" font-size="9" class="px" text-anchor="end" style="fill:#a5b4fc">{s["total"]} COMMITS SHOT DOWN SINCE {s["since"]}</text>')
-    return doc(h, b, "".join(css), title=f"Commit Invaders: {s['year_total']} contributions in the last year")
+    return arcade_doc(W, h, b, "".join(css), f"Commit Invaders: {s['year_total']} contributions in the last year")
+
+
+# ---------------------------------------------------------------- dark arcade theme (every section matches the hero)
+
+CY, GR, YE, VI, PK, FG, MU, PANEL, EDGE = "#67e8f9", "#4ade80", "#fde047", "#a78bfa", "#f472b6", "#fafafa", "#a1a1aa", "#0f0f15", "#27272a"
+
+
+def head(title, color, caption=""):
+    out = f'<text x="40" y="50" font-size="15" class="px" style="fill:{color}">{html.escape(title)}</text>'
+    if caption:
+        out += f'<text x="{W - 40}" y="50" font-size="12" class="mono" text-anchor="end" style="fill:{MU}">{html.escape(caption)}</text>'
+    return out
+
+
+def rise(i, base=.15, gap=.12):
+    return f'class="rise" style="animation-delay:{base + i * gap:.2f}s"'
+
+
+RISE = "@keyframes rise{from{opacity:0;transform:translateY(8px)}}.rise{animation:rise .7s cubic-bezier(.2,.8,.2,1) both}"
+
+
+def now(cfg, s):
+    h = 170
+    items = list(cfg["now"].items())[:3]
+    cols = [GR, CY, PK]
+    b = head("RIGHT NOW", YE, "what I'm up to")
+    cw, gap = 248, 13
+    for i, (k, v) in enumerate(items):
+        x = 40 + i * (cw + gap)
+        b += (f'<g {rise(i)}><rect x="{x}" y="72" width="{cw}" height="74" rx="10" fill="{PANEL}" stroke="{EDGE}"/>'
+              f'<rect x="{x}" y="72" width="4" height="74" rx="2" fill="{cols[i]}"/>'
+              f'<text x="{x + 18}" y="96" font-size="12" class="mono" style="fill:{cols[i]}">$ {html.escape(k)}</text>'
+              + "".join(f'<text x="{x + 18}" y="{118 + j * 18}" font-size="13" class="mono" style="fill:{FG}">{html.escape(ln)}</text>'
+                        for j, ln in enumerate(wrap(v, 30)[:2])) + "</g>")
+    return arcade_doc(W, h, b, RISE, "Right now: " + "; ".join(f"{k}: {v}" for k, v in items))
+
+
+def pixel_flame(x, y, px=3):
+    rows = ["...X...", "..XX...", "..XXX..", ".XXYXX.", ".XYYYX.", "XXYYYXX", ".XXXXX."]
+    return "".join(f'<rect x="{x + c * px}" y="{y + r * px}" width="{px}" height="{px}" fill="{"#fb923c" if ch == "X" else YE}"/>'
+                   for r, row in enumerate(rows) for c, ch in enumerate(row) if ch in "XY")
+
+
+def stats(cfg, s):
+    h = 250
+    css = RISE + ".fl{transform-box:fill-box;transform-origin:50% 100%;animation:flick .5s steps(2) infinite alternate}@keyframes flick{to{transform:scaleY(.85)}}"
+    b = head("PLAYER STATS", CY, f"since {s['since']} · updates daily")
+    big = [("CONTRIBUTIONS", f"{s['total']:,}", "all time", GR), ("CURRENT STREAK", f"{s['streak']}", "days", "#fb923c"),
+           ("LONGEST STREAK", f"{s['longest']}", "days", YE), ("STARS EARNED", f"{s['stars']}", "on public repos", VI)]
+    cw, gap = 184, 10
+    for i, (lab, val, sub, col) in enumerate(big):
+        x = 40 + i * (cw + gap)
+        b += (f'<g {rise(i)}><rect x="{x}" y="72" width="{cw}" height="112" rx="10" fill="{PANEL}" stroke="{EDGE}"/>'
+              f'<text x="{x + 16}" y="96" font-size="8" class="px" style="fill:{MU}">{lab}</text>'
+              f'<text x="{x + 16}" y="146" font-size="40" class="monob" style="fill:{col}">{val}</text>'
+              f'<text x="{x + 16}" y="170" font-size="12" class="mono" style="fill:{MU}">{sub}</text>')
+        if i == 1:
+            b += f'<g class="fl">{pixel_flame(x + cw - 38, 84)}</g>'
+        b += "</g>"
+    small = [(f"{s['commits_year']:,}", "commits this year"), (f"{s['prs']}", "pull requests"), (f"{s['repos']}", "public repos"), (f"{s['followers']}", "followers")]
+    for i, (val, lab) in enumerate(small):
+        x = 40 + i * (cw + gap)
+        b += (f'<g {rise(i, .7)}><text x="{x + 16}" y="218" font-size="18" class="monob" style="fill:{FG}">{val}</text>'
+              f'<text x="{x + 24 + len(val) * 11}" y="218" font-size="12" class="mono" style="fill:{MU}">{lab}</text></g>')
+    return arcade_doc(W, h, b, css, f"{s['total']} contributions, {s['streak']}-day streak, longest {s['longest']}, {s['stars']} stars")
+
+
+def languages(cfg, s):
+    langs = s["langs"]
+    h = 100 + 34 * len(langs)
+    seg, sgap, nseg = 10, 3, 40
+    b = head("LANGUAGES", PK, "by code size, public repos")
+    css = [RISE]
+    mx = max(p for _, p, _ in langs) or 1
+    for i, (n, p, col) in enumerate(langs):
+        y = 76 + i * 34
+        k = max(1, round(nseg * p / mx))
+        b += f'<text x="40" y="{y + 13}" font-size="14" class="mono" style="fill:{FG}">{html.escape(n)}</text>'
+        for j in range(nseg):
+            on = j < k
+            cls = f' class="s{i}_{j}"' if on else ""
+            b += f'<rect{cls} x="{190 + j * (seg + sgap)}" y="{y}" width="{seg}" height="16" rx="2" fill="{col if on else "#18181f"}"/>'
+            if on:
+                css.append(f".s{i}_{j}{{animation:rise .25s ease-out {.2 + i * .12 + j * .02:.2f}s both}}")
+        b += f'<text x="{W - 40}" y="{y + 13}" font-size="13" class="mono" text-anchor="end" style="fill:{MU}">{p * 100:.0f}%</text>'
+    return arcade_doc(W, h, b, "".join(css), "Languages: " + ", ".join(f"{n} {p * 100:.0f}%" for n, p, _ in langs))
 
 
 def project(cfg, r, i):
-    w, h = 270, 180
+    w, h = 270, 150
     lang = (r.get("primaryLanguage") or {}).get("name") or "code"
     col = (r.get("primaryLanguage") or {}).get("color") or "#9ca3af"
-    blurb = r["blurb"] or f"{lang} project"
+    blurb = r["blurb"] or (r.get("description") or f"{lang} project")
     upd = dt.datetime.fromisoformat(r["pushedAt"].replace("Z", "+00:00")).strftime("%b %Y")
-    rot = [-1.8, 1.2, -1.0][i % 3]
-    words, lines, cur = blurb.split(), [], ""
-    for wd in words:
-        if len(cur) + len(wd) > 28:
-            lines.append(cur); cur = wd
-        else:
-            cur = (cur + " " + wd).strip()
-    lines.append(cur)
-    css = (f"@keyframes sway2{{0%,100%{{transform:rotate({rot}deg)}}50%{{transform:rotate({-rot}deg)}}}}"
-           ".card{transform-box:fill-box;transform-origin:50% 0;animation:sway2 6s ease-in-out infinite}")
-    body = (f'<g class="card"><rect x="14" y="16" width="{w - 28}" height="{h - 30}" rx="8" fill="#fff" stroke="{INK}" stroke-width="2.3" filter="url(#wob)"/>'
-            f'<line x1="14" y1="54" x2="{w - 14}" y2="54" stroke="{RED}" stroke-width="1.6" opacity=".6"/>'
-            + "".join(f'<line x1="24" y1="{y}" x2="{w - 24}" y2="{y}" stroke="#c7dcf5" stroke-width="1.2"/>' for y in (82, 106, 130))
-            + f'<circle cx="{w / 2}" cy="18" r="7" fill="{RED}" stroke="{INK}" stroke-width="1.6"/>'
-            + t(28, 44, r["name"][:22], 22 if len(r["name"]) < 18 else 18)
-            + "".join(t(28, 78 + k * 24, ln, 17, MUTED) for k, ln in enumerate(lines[:3]))
-            + f'<circle cx="34" cy="{h - 30}" r="7" fill="{col}" stroke="{INK}" stroke-width="1.5"/>{t(48, h - 24, lang, 16)}'
-            + t(w - 28, h - 24, f"★ {r['stargazerCount']} · {upd}", 16, MUTED, "end") + "</g>")
-    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{html.escape(r["name"])}">'
-           f'<title>{html.escape(r["name"])}</title><style>{font_css()}{BASE_CSS}{css}</style>{DEFS}{body}</svg>')
-    return svg
+    name = r["name"] if len(r["name"]) <= 20 else r["name"][:19] + "…"
+    b = (f'<rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="12" fill="{PANEL}" stroke="{EDGE}" stroke-width="2"/>'
+         f'<rect x="1" y="1" width="{w - 2}" height="4" rx="2" fill="{col}"/>'
+         f'<text x="18" y="36" font-size="11" class="mono" style="fill:{MU}">&gt; repo</text>'
+         f'<text x="18" y="60" font-size="17" class="monob" style="fill:{FG}">{html.escape(name)}</text>'
+         + "".join(f'<text x="18" y="{84 + k * 17}" font-size="12" class="mono" style="fill:{MU}">{html.escape(ln)}</text>'
+                   for k, ln in enumerate(wrap(blurb, 34)[:2]))
+         + f'<circle cx="24" cy="{h - 22}" r="5" fill="{col}"/><text x="36" y="{h - 18}" font-size="12" class="mono" style="fill:{FG}">{html.escape(lang)}</text>'
+         f'<text x="{w - 18}" y="{h - 18}" font-size="12" class="mono" text-anchor="end" style="fill:{YE}">★ {r["stargazerCount"]} <tspan style="fill:{MU}">· {upd}</tspan></text>')
+    return arcade_doc(w, h, b, "", r["name"], scan=False)
 
 
 def toolbox_header(cfg, s):
-    b = t(40, 52, "toolbox", 30) + squiggle(42, 150, 64, AMBER, 4) + t(W - 40, 52, "click a tool to visit it", 17, MUTED, "end")
-    return doc(86, b, title="Toolbox")
+    b = head("TOOLBOX", GR, "click a tool to visit it")
+    return arcade_doc(W, 76, b, "", "Toolbox")
+
+
+TOOL_COL = {"Python": CY, "PyTorch": CY, "Hugging Face": CY, "LightGBM": CY, "polars": CY, "VAPT": PK,
+            "TypeScript": YE, "JavaScript": YE, "HTML/CSS": YE, "C++": VI, "Java": VI, "MySQL": VI,
+            "Docker": GR, "Git": GR, "Modal": GR, "Kaggle": GR, "Blender": PK, "Unity": PK}
+CHIP_W, CHIP_H = 132, 40
 
 
 def tool_chip(name, i):
-    w, h = int(len(name) * 10.5 + 44), 50
-    r = [-3, 2, -1.5, 2.5, -2][i % 5]
-    body = (f'<g transform="rotate({r} {w / 2} {h / 2})"><rect x="6" y="9" width="{w - 12}" height="34" rx="17" fill="#00000022"/>'
-            f'<rect x="4" y="6" width="{w - 12}" height="34" rx="17" fill="{NOTE[i % len(NOTE)]}" stroke="{INK}" stroke-width="2" filter="url(#wob)"/>'
-            f'{t((w - 8) / 2, 29, name, 18, INK, "middle")}</g>')
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{html.escape(name)}">'
-            f'<title>{html.escape(name)}</title><style>{font_css()}{BASE_CSS}</style>{DEFS}<g class="pop" style="animation-delay:{.1 + i * .06:.2f}s">{body}</g></svg>')
-
+    w, h = CHIP_W, CHIP_H
+    col = TOOL_COL.get(name, CY)
+    b = (f'<rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="10" fill="{PANEL}" stroke="{EDGE}" stroke-width="1.5"/>'
+         f'<rect x="14" y="{h / 2 - 4}" width="8" height="8" rx="1" fill="{col}"/>'
+         f'<text x="{(w + 22) / 2}" y="{h / 2 + 4.5}" font-size="13" class="mono" text-anchor="middle" style="fill:{FG}">{html.escape(name)}</text>')
+    return arcade_doc(w, h, b, "", name, scan=False, radius=10)
 
 
 def button(kind, label):
-    w, h = 200, 60
-    icons = {"linkedin": f'<rect x="22" y="16" width="28" height="28" rx="6" fill="#0a66c2" stroke="{INK}" stroke-width="2"/><text x="36" y="37" font-size="17" text-anchor="middle" style="fill:#fff">in</text>',
-             "email": f'<rect x="20" y="19" width="32" height="22" rx="3" fill="#fde68a" stroke="{INK}" stroke-width="2"/><path d="M20 20 L36 32 L52 20" fill="none" stroke="{INK}" stroke-width="2"/>',
-             "github": f'<circle cx="36" cy="30" r="14" fill="{INK}"/><text x="36" y="35" font-size="13" text-anchor="middle" style="fill:#fff">&lt;/&gt;</text>'}
-    body = (f'<rect x="6" y="8" width="{w - 10}" height="{h - 14}" rx="22" fill="#00000018"/>'
-            f'<rect x="3" y="4" width="{w - 10}" height="{h - 14}" rx="22" fill="{PAPER}" stroke="{INK}" stroke-width="2.4" filter="url(#wob)"/>'
-            f'{icons[kind]}{t(66, 36, label, 20)}')
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{label}">'
-            f'<title>{label}</title><style>{font_css()}{BASE_CSS}</style>{DEFS}{body}</svg>')
+    w, h = 200, 48
+    col = {"linkedin": "#0a66c2", "email": YE, "github": FG}[kind]
+    icons = {"linkedin": f'<rect x="16" y="14" width="20" height="20" rx="4" fill="#0a66c2"/><text x="26" y="29" font-size="12" class="monob" text-anchor="middle" style="fill:#fff">in</text>',
+             "email": f'<rect x="16" y="16" width="22" height="16" rx="2" fill="none" stroke="{YE}" stroke-width="2"/><path d="M16 17 L27 25 L38 17" fill="none" stroke="{YE}" stroke-width="2"/>',
+             "github": f'<text x="27" y="30" font-size="14" class="monob" text-anchor="middle" style="fill:{GR}">&gt;_</text>'}
+    b = (f'<rect x="1" y="1" width="{w - 2}" height="{h - 2}" rx="12" fill="{PANEL}" stroke="{col}" stroke-opacity=".7" stroke-width="1.5"/>'
+         f'{icons[kind]}<text x="50" y="29" font-size="14" class="mono" style="fill:{FG}">{html.escape(label)}</text>')
+    return arcade_doc(w, h, b, "", label, scan=False, radius=12)
 
 
 def readme(cfg, s):
@@ -481,7 +503,7 @@ def readme(cfg, s):
     img = lambda f, alt, w="100%": f'<img src="{A}/{f}.svg?v={ver(f)}" width="{w}" alt="{html.escape(alt)}">'
     projects = " ".join(f'<a href="{r["url"]}">{img(f"project-{i + 1}", r["name"], "32%")}</a>' for i, r in enumerate(s["featured"]))
     slug = lambda n: "".join(ch for ch in n.lower() if ch.isalnum())
-    tools = " ".join(f'<a href="{x["url"]}"><img src="{A}/tool-{slug(x["name"])}.svg?v={ver("tool-" + slug(x["name"]))}" height="50" alt="{html.escape(x["name"])}"></a>' for x in cfg["toolbox"])
+    tools = " ".join(f'<a href="{x["url"]}"><img src="{A}/tool-{slug(x["name"])}.svg?v={ver("tool-" + slug(x["name"]))}" height="40" alt="{html.escape(x["name"])}"></a>' for x in cfg["toolbox"])
     views = (f'<img src="https://komarev.com/ghpvc/?username={cfg["login"].lower()}&label=visitors&color=7c3aed&style=flat-square" '
              f'alt="profile views">')
     return f"""<!-- generated by scripts/build.py from profile.json + live GitHub data; edit profile.json, not this file -->
