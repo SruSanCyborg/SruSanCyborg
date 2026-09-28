@@ -1,0 +1,45 @@
+{
+ "total": 533,
+ "streak": 1,
+ "longest": 8,
+ "stars": 14,
+ "repos": 20,
+ "prs": 92,
+ "issues": 1,
+ "followers": 24,
+ "commits_year": 253,
+ "since": "2022",
+ "langs": [
+  [
+   "TypeScript",
+   0.6362696597618513,
+   "#3178c6"
+  ],
+  [
+   "HTML",
+   0.15049897339499876,
+   "#e34c26"
+  ],
+  [
+   "JavaScript",
+   0.12384764497647684,
+   "#f1e05a"
+  ],
+  [
+   "Python",
+   0.0666462324283282,
+   "#3572A5"
+  ],
+  [
+   "CSS",
+   0.01261230638536729,
+   "#663399"
+  ]
+ ],
+ "year_total": 472,
+ "featured": [
+  "Finsec",
+  "FINSEC_CLI_Sirius",
+  "llm_guardrail"
+ ]
+}
