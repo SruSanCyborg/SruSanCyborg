@@ -353,62 +353,68 @@ def pixel_ship(x, y, px=3, color="#f472b6"):
 
 
 def calendar(cfg, s):
+    # v2 look (navy cabinet, grid on top) + laser, sparks, tiles cleared until the wave restarts, live score
     weeks = s["weeks"][-52:]
-    w, h = W, 300
+    h = 270
     T = 18.0
-    vals = sorted(v for wk in weeks for v in wk if v > 0)
+    END = 94.0  # ship reaches the right edge here; the cleared board holds, then the wave respawns
+    vals = sorted(v for w in weeks for v in w if v > 0)
     q = [vals[int(len(vals) * f)] if vals else 1 for f in (.25, .5, .75)]
-    pal = ["#18181b", "#166534", "#16a34a", "#22c55e", "#86efac"]
+    pal = ["#1b2447", "#166534", "#16a34a", "#22c55e", "#86efac"]
     lvl = lambda v: 0 if v == 0 else 1 if v <= q[0] else 2 if v <= q[1] else 3 if v <= q[2] else 4
-    cell, gap, x0, y0 = 11.6, 3.1, 44, 112
-    n, step = len(weeks), cell + gap
-    ship_y = y0 + 7 * step + 34
-    css = [f".ship{{animation:fly {T}s linear infinite}}@keyframes fly{{from{{transform:translateX(0)}}to{{transform:translateX({n * step:.1f}px)}}}}",
-           "@keyframes march{0%,100%{transform:translateX(0)}50%{transform:translateX(60px)}}.march{animation:march 6s ease-in-out infinite}",
-           "@keyframes flipA{0%,49%{opacity:1}50%,100%{opacity:0}}@keyframes flipB{0%,49%{opacity:0}50%,100%{opacity:1}}"
-           ".fa{animation:flipA .8s steps(1) infinite}.fb{animation:flipB .8s steps(1) infinite}"]
-    body = stars(w, h, 26, 3)
-    body += (f'<text x="44" y="46" font-size="15" class="px" style="fill:#67e8f9">COMMIT INVADERS</text>'
-             f'<text x="{w - 44}" y="46" font-size="11" class="px" text-anchor="end" style="fill:#fde047">HI-SCORE {s["year_total"]:05d}</text>')
-    body += '<g class="march">' + "".join(
-        f'<g class="fa">{invader(90 + k * 130, 64, 2.2, c)}</g><g class="fb">{invader(90 + k * 130, 64, 2.2, c, 1)}</g>'
-        for k, c in enumerate(["#a78bfa", "#f472b6", "#67e8f9", "#fde047", "#4ade80"])) + "</g>"
+    cell, gap, x0, y0 = 11.6, 3.1, 44, 78
+    n = len(weeks)
+    step = cell + gap
+    ship_y = 208
+    css = [fontface("Pixel", "pixel.woff2"),
+           ".px{font-family:'Pixel','Press Start 2P',monospace}",
+           f".ship{{animation:fly {T}s linear infinite}}@keyframes fly{{0%{{transform:translateX(0)}}{END}%,100%{{transform:translateX({(n - 1) * step:.1f}px)}}}}",
+           ".star{animation:twinkle 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}",
+           f"@keyframes clear{{0%,{END + 1}%{{opacity:0}}{END + 2}%,{END + 4}%{{opacity:1}}{END + 5}%,100%{{opacity:0}}}}.clear{{opacity:0;animation:clear {T}s linear infinite}}"]
+    b = f'<rect x="10" y="10" width="{W - 20}" height="{h - 20}" rx="16" fill="#0b1026"/>'
+    for k in range(26):
+        sx, sy = (k * 97) % (W - 60) + 30, (k * 53) % (h - 60) + 24
+        b += f'<rect class="star" style="animation-delay:{(k % 7) * .3:.1f}s" x="{sx}" y="{sy}" width="2" height="2" fill="#e0e7ff" opacity=".7"/>'
+    b += (f'<text x="44" y="52" font-size="16" class="px" style="fill:#67e8f9">COMMIT INVADERS</text>'
+          f'<text x="{W - 44}" y="52" font-size="12" class="px" text-anchor="end" style="fill:#fde047">HI-SCORE {s["year_total"]:05d}</text>')
     score, hits = 0, []
     for i, wk in enumerate(weeks):
         colx = x0 + i * step
-        p = 100 * (i + 0.5) / n
-        live = [(j, v) for j, v in enumerate(wk) if v > 0]
+        p = END * i / max(n - 1, 1)
+        live = [v for v in wk if v > 0]
         if live:
-            a, b2, c2 = max(p - 0.3, 0), min(p + 0.9, 100), min(p + 5, 100)
+            a, b2 = max(p - 0.3, 0), p + 0.8
             css.append(f"@keyframes lz{i}{{0%,{a:.2f}%{{opacity:0}}{a + .01:.2f}%,{b2:.2f}%{{opacity:1}}{b2 + .01:.2f}%,100%{{opacity:0}}}}"
                        f".lz{i}{{opacity:0;animation:lz{i} {T}s linear infinite}}"
-                       f"@keyframes h{i}{{0%,{b2:.2f}%{{transform:scale(1);opacity:1}}{b2 + .4:.2f}%{{transform:scale(.15);opacity:.1}}{c2 - 1:.2f}%{{transform:scale(.15);opacity:.1}}{c2:.2f}%,100%{{transform:scale(1);opacity:1}}}}"
+                       f"@keyframes h{i}{{0%,{b2:.2f}%{{transform:scale(1);opacity:1}}{b2 + .5:.2f}%,98%{{transform:scale(0);opacity:0}}99.5%,100%{{transform:scale(1);opacity:1}}}}"
                        f".h{i}{{transform-box:fill-box;transform-origin:center;animation:h{i} {T}s linear infinite}}")
-            for k2, (dx, dy) in enumerate(((-9, -9), (9, -9), (-9, 9), (9, 9))):
-                css.append(f"@keyframes sp{i}_{k2}{{0%,{b2:.2f}%{{opacity:0;transform:translate(0,0)}}{b2 + .1:.2f}%{{opacity:1}}{b2 + 1.6:.2f}%{{opacity:0;transform:translate({dx}px,{dy}px)}}100%{{opacity:0}}}}"
+            for k2, (dx, dy) in enumerate(((-10, -10), (10, -10), (-10, 10), (10, 10))):
+                css.append(f"@keyframes sp{i}_{k2}{{0%,{b2:.2f}%{{opacity:0;transform:translate(0,0)}}{b2 + .1:.2f}%{{opacity:1}}{b2 + 1.8:.2f}%{{opacity:0;transform:translate({dx}px,{dy}px)}}100%{{opacity:0}}}}"
                            f".sp{i}_{k2}{{opacity:0;animation:sp{i}_{k2} {T}s linear infinite}}")
-            body += f'<rect class="lz{i}" x="{colx + cell / 2 - 1:.1f}" y="{y0:.1f}" width="2" height="{ship_y - y0:.1f}" fill="#fde047"/>'
-            score += sum(v for _, v in live)
+            b += f'<rect class="lz{i}" x="{colx + cell / 2 - 1:.1f}" y="{y0:.1f}" width="2" height="{ship_y - y0:.1f}" fill="#fde047"/>'
+            score += sum(live)
             hits.append((b2, score))
         for j, v in enumerate(wk):
             L = lvl(v)
-            hc = f' class="h{i}"' if L else ""
-            body += f'<rect{hc} x="{colx:.1f}" y="{y0 + j * step:.1f}" width="{cell}" height="{cell}" rx="2" fill="{pal[L]}"/>'
+            cls = f' class="h{i}"' if L else ""
+            b += f'<rect{cls} x="{colx:.1f}" y="{y0 + j * step:.1f}" width="{cell}" height="{cell}" rx="2" fill="{pal[L]}"/>'
             if L:
-                for k2 in range(4):
-                    body += f'<rect class="sp{i}_{k2}" x="{colx + cell / 2 - 1.5:.1f}" y="{y0 + j * step + cell / 2 - 1.5:.1f}" width="3" height="3" fill="#fde047"/>'
-    # live score: one text per hit, visible from its hit until the next
+                b += "".join(f'<rect class="sp{i}_{k2}" x="{colx + cell / 2 - 1.5:.1f}" y="{y0 + j * step + cell / 2 - 1.5:.1f}" width="3" height="3" fill="#fde047"/>' for k2 in range(4))
+    b += f'<g class="ship">{pixel_ship(x0 + cell / 2 - 13.5, ship_y, 3)}</g>'
+    b += f'<text class="clear px" x="{W / 2}" y="{y0 + 3.5 * step + 6}" font-size="14" text-anchor="middle" style="fill:#fde047">WAVE CLEARED</text>'
+    # live score: one text per hit, shown from that hit until the next (resting frame = final score)
     marks = [(0.0, 0)] + hits
     for k, (start, val) in enumerate(marks):
-        end = marks[k + 1][0] if k + 1 < len(marks) else 100
-        css.append(f"@keyframes sc{k}{{0%,{max(start - .01, 0):.2f}%{{opacity:0}}{start:.2f}%,{max(end - .01, start):.2f}%{{opacity:1}}{end:.2f}%,100%{{opacity:0}}}}"
-                   f".sc{k}{{opacity:0;animation:sc{k} {T}s linear infinite}}")
-        body += f'<text class="sc{k} px" x="44" y="{h - 18}" font-size="10" style="fill:#fafafa">SCORE {val:05d}</text>'
-    body += f'<g class="ship">{pixel_ship(x0 + cell / 2 - 13.5, ship_y, 3)}</g>'
-    body += (f'<rect x="30" y="{h - 40}" width="{w - 60}" height="2" fill="#27272a"/>'
-             f'<text x="{w - 44}" y="{h - 18}" font-size="10" class="px" text-anchor="end" style="fill:#a1a1aa">{s["total"]} COMMITS SINCE {s["since"]} · 1UP SRUSAN</text>')
-    return arcade_doc(w, h, body, "".join(css), f"Commit Invaders: {s['year_total']} contributions in the last year")
-
+        end = marks[k + 1][0] if k + 1 < len(marks) else None
+        if end is None:
+            css.append(f"@keyframes sc{k}{{0%,{start - .01:.2f}%{{opacity:0}}{start:.2f}%,98%{{opacity:1}}98.01%,100%{{opacity:0}}}}.sc{k}{{animation:sc{k} {T}s linear infinite}}")
+        else:
+            css.append(f"@keyframes sc{k}{{0%,{max(start - .01, 0):.2f}%{{opacity:0}}{start:.2f}%,{end - .01:.2f}%{{opacity:1}}{end:.2f}%,100%{{opacity:0}}}}.sc{k}{{opacity:0;animation:sc{k} {T}s linear infinite}}")
+        b += f'<text class="sc{k} px" x="{W / 2}" y="{h - 16}" font-size="9" text-anchor="middle" style="fill:#fafafa">SCORE {val:05d}</text>'
+    b += (f'<rect x="30" y="{h - 34}" width="{W - 60}" height="2" fill="#312e81"/>'
+          f'<text x="44" y="{h - 16}" font-size="9" class="px" style="fill:#a5b4fc">1UP SRUSAN</text>'
+          f'<text x="{W - 44}" y="{h - 16}" font-size="9" class="px" text-anchor="end" style="fill:#a5b4fc">{s["total"]} COMMITS SHOT DOWN SINCE {s["since"]}</text>')
+    return doc(h, b, "".join(css), title=f"Commit Invaders: {s['year_total']} contributions in the last year")
 
 
 def project(cfg, r, i):
