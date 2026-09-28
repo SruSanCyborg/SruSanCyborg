@@ -1,6 +1,6 @@
 ![MasterHead](https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/81bb4b165684019.640b6038d133e.gif)
 <h1 align="center">
-<img src="https://readme-typing-svg.demolab.com/?font=Righteous&size=35&center=true&vCenter=true&width=500&height=70&duration=4000&lines=Hi+There!+👋;+I'm+Sanjay+Sivakumar!;&color=FFFFFF" />
+<img src="https://readme-typing-svg.demolab.com/?font=Righteous&size=35&center=true&vCenter=true&width=500&height=70&duration=4000&color=FFFFFF&lines=Hi+There!+%F0%9F%91%8B;I%27m+Sanjay+Sivakumar!" alt="Hi There! I'm Sanjay Sivakumar!" />
 </h1>
 
 <h3 align="center">A passionate AI developer and Tech Explorer</h3>
