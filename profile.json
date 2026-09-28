@@ -1,9 +1,9 @@
 {
   "login": "SruSanCyborg",
   "name": "Sanjay Sivakumar",
-  "hello": "Hi, I'm Sanjay",
+  "hello": "Sanjay Sivakumar",
   "taglines": [
-    "AI developer & tech explorer",
+    "AI developer & ML engineer",
     "Amazon ML Challenge 2026: 0.9857 entity resolution",
     "hackathons · LLM guardrails · fintech CLIs"
   ],
@@ -12,11 +12,89 @@
     "learning": "Docker & RAG",
     "ask me about": "AI governance · entity resolution"
   },
-  "toolbox": ["Python", "TypeScript", "JavaScript", "C++", "Java", "HTML/CSS", "MySQL", "LightGBM", "PyTorch", "polars", "Blender", "Unity", "VS Code", "Git"],
+  "toolbox": [
+    {
+      "name": "Python",
+      "url": "https://www.python.org"
+    },
+    {
+      "name": "PyTorch",
+      "url": "https://pytorch.org"
+    },
+    {
+      "name": "Hugging Face",
+      "url": "https://huggingface.co"
+    },
+    {
+      "name": "LightGBM",
+      "url": "https://lightgbm.readthedocs.io"
+    },
+    {
+      "name": "polars",
+      "url": "https://pola.rs"
+    },
+    {
+      "name": "TypeScript",
+      "url": "https://www.typescriptlang.org"
+    },
+    {
+      "name": "JavaScript",
+      "url": "https://developer.mozilla.org/docs/Web/JavaScript"
+    },
+    {
+      "name": "HTML/CSS",
+      "url": "https://developer.mozilla.org/docs/Web/HTML"
+    },
+    {
+      "name": "C++",
+      "url": "https://isocpp.org"
+    },
+    {
+      "name": "Java",
+      "url": "https://dev.java"
+    },
+    {
+      "name": "MySQL",
+      "url": "https://www.mysql.com"
+    },
+    {
+      "name": "Docker",
+      "url": "https://www.docker.com"
+    },
+    {
+      "name": "Git",
+      "url": "https://git-scm.com"
+    },
+    {
+      "name": "Modal",
+      "url": "https://modal.com"
+    },
+    {
+      "name": "Kaggle",
+      "url": "https://www.kaggle.com"
+    },
+    {
+      "name": "Blender",
+      "url": "https://www.blender.org"
+    },
+    {
+      "name": "Unity",
+      "url": "https://unity.com"
+    }
+  ],
   "featured": [
-    {"repo": "Finsec", "blurb": ""},
-    {"repo": "FINSEC_CLI_Sirius", "blurb": ""},
-    {"repo": "llm_guardrail", "blurb": ""}
+    {
+      "repo": "Finsec",
+      "blurb": ""
+    },
+    {
+      "repo": "FINSEC_CLI_Sirius",
+      "blurb": ""
+    },
+    {
+      "repo": "llm_guardrail",
+      "blurb": ""
+    }
   ],
   "links": {
     "linkedin": "https://www.linkedin.com/in/sanjaysivakumar11/",

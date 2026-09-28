@@ -173,49 +173,47 @@ def signature(x, y, size=34, rot=-7):
             f'stroke-width="2.4" stroke-linecap="round" pathLength="100" style="stroke-dasharray:100;animation:draw 1s ease-out 2.2s both"/></g>')
 
 
-def robot(x, y, s=1.0, wave=True, cls=""):
-    arm = (f'<g class="arm"><path d="M44 10 Q70 -6 78 -34" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>'
-           f'<circle cx="79" cy="-38" r="8" fill="#fbbf24" stroke="{INK}" stroke-width="3"/></g>') if wave else \
-          f'<path d="M44 10 Q60 22 58 40" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>'
-    return (f'<g transform="translate({x} {y}) scale({s})" class="{cls}">'
-            f'<line x1="0" y1="-78" x2="0" y2="-56" stroke="{INK}" stroke-width="3"/><circle class="bulb" cx="0" cy="-82" r="7" fill="{RED}" stroke="{INK}" stroke-width="2"/>'
-            f'<rect x="-44" y="-56" width="88" height="70" rx="18" fill="#e5e7eb" stroke="{INK}" stroke-width="3.5" filter="url(#wob)"/>'
-            f'<g class="eyes"><circle cx="-16" cy="-24" r="7" fill="{INK}"/><circle cx="16" cy="-24" r="7" fill="{INK}"/></g>'
-            f'<path d="M-14 -4 Q0 8 14 -4" fill="none" stroke="{INK}" stroke-width="3" stroke-linecap="round"/>'
-            f'<circle cx="-28" cy="-8" r="5" fill="#fca5a5" opacity=".8"/><circle cx="28" cy="-8" r="5" fill="#fca5a5" opacity=".8"/>'
-            f'<rect x="-34" y="14" width="68" height="54" rx="12" fill="#c7d2fe" stroke="{INK}" stroke-width="3.5" filter="url(#wob)"/>'
-            f'<path d="M-44 10 Q-60 22 -58 40" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>{arm}'
-            f'<path d="M-16 68 V84 M16 68 V84" stroke="{INK}" stroke-width="5" stroke-linecap="round"/></g>')
-
-
 # ---------------------------------------------------------------- sections
 
 def hero(cfg, s):
     h = 300
     css = f"""
-.hello{{font-family:'Sign','Caveat',cursive;font-weight:700;fill:{INK};stroke:{INK};stroke-width:1;stroke-dasharray:900;animation:hello 2.6s ease-out both}}
-@keyframes hello{{0%{{stroke-dashoffset:900;fill-opacity:0}}65%{{fill-opacity:0}}100%{{stroke-dashoffset:0;fill-opacity:1}}}}
-.arm{{transform-box:fill-box;transform-origin:0% 100%;animation:wave 1.6s ease-in-out infinite}}
-@keyframes wave{{0%,100%{{transform:rotate(0)}}50%{{transform:rotate(22deg)}}}}
-.eyes{{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}}
-@keyframes blink{{0%,92%,100%{{transform:scaleY(1)}}95%{{transform:scaleY(.1)}}}}
-.bulb{{animation:glow 1.2s ease-in-out infinite alternate}}@keyframes glow{{to{{fill:{AMBER}}}}}
+.hello{{font-family:'Sign','Caveat',cursive;font-weight:700;fill:{INK};stroke:{INK};stroke-width:1;stroke-dasharray:1400;animation:hello 3s ease-out both}}
+@keyframes hello{{0%{{stroke-dashoffset:1400;fill-opacity:0}}65%{{fill-opacity:0}}100%{{stroke-dashoffset:0;fill-opacity:1}}}}
 .tag{{animation:cycle 9s infinite}}.tag1,.tag2{{opacity:0}}.tag1{{animation-delay:3s}}.tag2{{animation-delay:6s}}
 @keyframes cycle{{0%{{opacity:0;transform:translateY(8px)}}6%,30%{{opacity:1;transform:none}}36%,100%{{opacity:0}}}}
+.pulse{{stroke-dasharray:10 90;animation:pulse 2.4s linear infinite}}
+@keyframes pulse{{from{{stroke-dashoffset:100}}to{{stroke-dashoffset:0}}}}
+.node{{animation:glow 2.4s ease-in-out infinite}}
+@keyframes glow{{0%,100%{{fill:{PAPER}}}40%{{fill:#fde68a}}}}
 """
-    b = f'<text x="60" y="118" font-size="78" class="hello">{html.escape(cfg["hello"])}</text>'
-    b += squiggle(62, 470, 140)
-    b += t(64, 176, "a.k.a.", 22, MUTED) + f'<text x="130" y="178" font-size="34" class="sign" style="fill:{PURPLE}">SruSan</text>'
+    b = f'<text x="52" y="112" font-size="70" class="hello">{html.escape(cfg["hello"])}</text>'
+    b += squiggle(54, 520, 134)
     for i, tag in enumerate(cfg["taglines"][:3]):
         b += (f'<g class="tag tag{i}" style="transform-box:fill-box">'
-              f'<rect x="60" y="202" width="{len(tag) * 11.2 + 40}" height="46" rx="10" fill="{NOTE[i]}" stroke="{INK}" stroke-width="2.3" filter="url(#wob)"/>'
-              f'{t(80, 233, tag, 22)}</g>')
-    b += robot(690, 180, 1.05)
-    b += (f'<g transform="translate(560 70)"><rect x="-6" y="-26" width="118" height="44" rx="14" fill="#fff" stroke="{INK}" stroke-width="2.2" filter="url(#wob)"/>'
-          f'<path d="M80 18 L96 36 L72 18" fill="#fff" stroke="{INK}" stroke-width="2.2"/>{t(53, 3, "hello! 👋"[:6], 20, INK, "middle")}</g>')
-    b += spark(520, 60, 9, AMBER, 0) + spark(800, 50, 7, "#fb7185", .8) + spark(610, 250, 7, "#60a5fa", 1.6) + spark(795, 250, 9, "#34d399", .4)
-    b += signature(760, 282, 26, -5)
-    return doc(h, b, css, sign=True, title=f"Hi, I'm {cfg['name']}")
+              f'<rect x="52" y="160" width="{len(tag) * 11 + 40}" height="46" rx="10" fill="{NOTE[i]}" stroke="{INK}" stroke-width="2.3" filter="url(#wob)"/>'
+              f'{t(72, 191, tag, 22)}</g>')
+    b += t(54, 250, f"github.com/{cfg['login']}  ·  building with data, models and care", 17, MUTED)
+    # hand-drawn neural network: data -> models -> impact
+    layers = [(600, [70, 130, 190, 250]), (700, [100, 160, 220]), (800, [130, 190])]
+    for li in range(2):
+        (xa, ya), (xb, yb) = layers[li], layers[li + 1]
+        for i, y1 in enumerate(ya):
+            for j, y2 in enumerate(yb):
+                d = f"M{xa} {y1} C{xa + 45} {y1} {xb - 45} {y2} {xb} {y2}"
+                b += f'<path d="{d}" fill="none" stroke="#cbd5e1" stroke-width="2"/>'
+                delay = li * 0.8 + (i * 0.23 + j * 0.37) % 0.8
+                b += (f'<path d="{d}" pathLength="100" class="pulse" style="animation-delay:{delay:.2f}s" fill="none" '
+                      f'stroke="{PURPLE if li == 0 else AMBER}" stroke-width="3.2" stroke-linecap="round"/>')
+    for li, (x, ys) in enumerate(layers):
+        for k, y in enumerate(ys):
+            b += (f'<circle class="node" style="animation-delay:{li * 0.8 + 0.4:.1f}s" cx="{x}" cy="{y}" r="15" fill="{PAPER}" '
+                  f'stroke="{INK}" stroke-width="3" filter="url(#wob)"/>')
+    for x, lab in ((600, "data"), (700, "models"), (800, "impact")):
+        b += t(x, 286, lab, 17, MUTED, "middle")
+    b += spark(530, 40, 8, AMBER, 0) + spark(835, 60, 7, "#fb7185", .9) + spark(560, 270, 6, "#60a5fa", 1.7)
+    b += signature(452, 280, 24, -4)
+    return doc(h, b, css, sign=True, title=f"{cfg['name']}: " + "; ".join(cfg["taglines"]))
 
 
 def now(cfg, s):
@@ -278,29 +276,54 @@ def languages(cfg, s):
     return doc(h, b, css, title="Languages: " + ", ".join(f"{n} {p * 100:.0f}%" for n, p, _ in langs))
 
 
+def pixel_ship(x, y, px=3, color="#f472b6"):
+    rows = ["....X....", "...XXX...", "...XXX...", ".XXXXXXX.", "XXXXXXXXX", "XX.XXX.XX", "X...X...X"]
+    return "".join(f'<rect x="{x + c * px}" y="{y + r * px}" width="{px}" height="{px}" fill="{color}"/>'
+                   for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "X")
+
+
 def calendar(cfg, s):
     weeks = s["weeks"][-52:]
-    h = 250
+    h = 270
+    T = 16.0
     vals = sorted(v for w in weeks for v in w if v > 0)
     q = [vals[int(len(vals) * f)] if vals else 1 for f in (.25, .5, .75)]
-    pal = ["#efe4cc", "#bbf7d0", "#4ade80", "#16a34a", "#166534"]
+    pal = ["#1b2447", "#166534", "#16a34a", "#22c55e", "#86efac"]
     lvl = lambda v: 0 if v == 0 else 1 if v <= q[0] else 2 if v <= q[1] else 3 if v <= q[2] else 4
-    cell, gap, x0, y0 = 11.6, 3.1, 44, 84
-    b = t(40, 52, "a year of commits", 30) + squiggle(42, 290, 64, PURPLE, 4) + t(W - 40, 52, f"{s['year_total']:,} in the last year", 17, MUTED, "end")
+    cell, gap, x0, y0 = 11.6, 3.1, 44, 78
+    n = len(weeks)
+    step = cell + gap
+    ship_y = 208
+    css = [f"@font-face{{font-family:'Pixel';src:url(data:font/woff2;base64,{base64.b64encode(open(os.path.join(ROOT, 'fonts', 'pixel.woff2'), 'rb').read()).decode()}) format('woff2');}}",
+           ".px{font-family:'Pixel','Press Start 2P',monospace}",
+           f".ship{{animation:fly {T}s linear infinite}}@keyframes fly{{from{{transform:translateX(0)}}to{{transform:translateX({n * step:.1f}px)}}}}",
+           ".star{animation:twinkle 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}"]
+    b = f'<rect x="10" y="10" width="{W - 20}" height="{h - 20}" rx="16" fill="#0b1026"/>'
+    for k in range(26):
+        sx, sy = (k * 97) % (W - 60) + 30, (k * 53) % (h - 60) + 24
+        b += f'<rect class="star" style="animation-delay:{(k % 7) * .3:.1f}s" x="{sx}" y="{sy}" width="2" height="2" fill="#e0e7ff" opacity=".7"/>'
+    b += (f'<text x="44" y="52" font-size="16" class="px" style="fill:#67e8f9">COMMIT INVADERS</text>'
+          f'<text x="{W - 44}" y="52" font-size="12" class="px" text-anchor="end" style="fill:#fde047">HI-SCORE {s["year_total"]:05d}</text>')
     for i, wk in enumerate(weeks):
+        colx = x0 + i * step
+        p = 100 * (i + 0.5) / n
+        hit = any(v > 0 for v in wk)
+        if hit:
+            a, b2, c2 = max(p - 0.3, 0), min(p + 0.8, 100), min(p + 4, 100)
+            css.append(f"@keyframes lz{i}{{0%,{a:.2f}%{{opacity:0}}{a + 0.01:.2f}%,{b2:.2f}%{{opacity:1}}{b2 + 0.01:.2f}%,100%{{opacity:0}}}}"
+                       f".lz{i}{{opacity:0;animation:lz{i} {T}s linear infinite}}"
+                       f"@keyframes h{i}{{0%,{b2:.2f}%{{transform:scale(1);opacity:1}}{b2 + 0.4:.2f}%{{transform:scale(.15);opacity:.15}}{c2:.2f}%,100%{{transform:scale(1);opacity:1}}}}"
+                       f".h{i}{{transform-box:fill-box;transform-origin:center;animation:h{i} {T}s linear infinite}}")
+            b += f'<rect class="lz{i}" x="{colx + cell / 2 - 1:.1f}" y="{y0:.1f}" width="2" height="{ship_y - y0:.1f}" fill="#fde047"/>'
         for j, v in enumerate(wk):
-            x, y = x0 + i * (cell + gap), y0 + j * (cell + gap)
             L = lvl(v)
-            anim = f' class="pop" style="animation-delay:{.2 + i * .035:.2f}s"' if L else ""
-            b += f'<rect{anim} x="{x:.1f}" y="{y:.1f}" width="{cell}" height="{cell}" rx="3" fill="{pal[L]}" stroke="#00000018"/>'
-    endx = x0 + len(weeks) * (cell + gap)
-    path = f"M{x0 - 10} 218 L{endx} 218"
-    b += (f'<path d="{path}" stroke="{INK}" stroke-width="2" stroke-dasharray="4 7" opacity=".5"/>'
-          f'<g><animateMotion dur="14s" repeatCount="indefinite" path="{path}"/>'
-          f'<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur=".5s" repeatCount="indefinite"/>'
-          f'{robot(0, -16, .34, wave=False)}</g></g>')
-    b += t(W - 40, 236, "the robot collects every commit →", 15, MUTED, "end")
-    return doc(h, b, title=f"Contribution calendar: {s['year_total']} contributions in the last year")
+            cls = f' class="h{i}"' if L else ""
+            b += f'<rect{cls} x="{colx:.1f}" y="{y0 + j * step:.1f}" width="{cell}" height="{cell}" rx="2" fill="{pal[L]}"/>'
+    b += f'<g class="ship">{pixel_ship(x0 + cell / 2 - 13.5, ship_y, 3)}</g>'
+    b += (f'<rect x="30" y="{h - 34}" width="{W - 60}" height="2" fill="#312e81"/>'
+          f'<text x="44" y="{h - 16}" font-size="9" class="px" style="fill:#a5b4fc">1UP {cfg["login"].upper()}</text>'
+          f'<text x="{W - 44}" y="{h - 16}" font-size="9" class="px" text-anchor="end" style="fill:#a5b4fc">{s["total"]} COMMITS SHOT DOWN SINCE {s["since"]}</text>')
+    return doc(h, b, "".join(css), title=f"Commit Invaders: {s['year_total']} contributions in the last year")
 
 
 def project(cfg, r, i):
@@ -332,21 +355,20 @@ def project(cfg, r, i):
     return svg
 
 
-def toolbox(cfg, s):
-    tools = cfg["toolbox"]
-    h = 170
-    b = t(40, 52, "toolbox", 30) + squiggle(42, 150, 64, AMBER, 4)
-    x, y = 40, 96
-    for i, tool in enumerate(tools):
-        w = len(tool) * 10.5 + 30
-        if x + w > W - 40:
-            x, y = 40, y + 50
-        r = [-3, 2, -1.5, 2.5, -2][i % 5]
-        b += (f'<g class="pop" style="animation-delay:{.15 + i * .07:.2f}s"><g transform="rotate({r} {x + w / 2} {y})">'
-              f'<rect x="{x}" y="{y - 20}" width="{w:.0f}" height="36" rx="18" fill="{NOTE[i % len(NOTE)]}" stroke="{INK}" stroke-width="2" filter="url(#wob)"/>'
-              f'{t(x + w / 2, y + 5, tool, 18, INK, "middle")}</g></g>')
-        x += w + 14
-    return doc(y + 40, b, title="Toolbox: " + ", ".join(tools))
+def toolbox_header(cfg, s):
+    b = t(40, 52, "toolbox", 30) + squiggle(42, 150, 64, AMBER, 4) + t(W - 40, 52, "click a tool to visit it", 17, MUTED, "end")
+    return doc(86, b, title="Toolbox")
+
+
+def tool_chip(name, i):
+    w, h = int(len(name) * 10.5 + 44), 50
+    r = [-3, 2, -1.5, 2.5, -2][i % 5]
+    body = (f'<g transform="rotate({r} {w / 2} {h / 2})"><rect x="6" y="9" width="{w - 12}" height="34" rx="17" fill="#00000022"/>'
+            f'<rect x="4" y="6" width="{w - 12}" height="34" rx="17" fill="{NOTE[i % len(NOTE)]}" stroke="{INK}" stroke-width="2" filter="url(#wob)"/>'
+            f'{t((w - 8) / 2, 29, name, 18, INK, "middle")}</g>')
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{html.escape(name)}">'
+            f'<title>{html.escape(name)}</title><style>{font_css()}{BASE_CSS}</style>{DEFS}<g class="pop" style="animation-delay:{.1 + i * .06:.2f}s">{body}</g></svg>')
+
 
 
 def button(kind, label):
@@ -366,6 +388,8 @@ def readme(cfg, s):
     A = "assets/sketchbook"
     img = lambda f, alt, w="100%": f'<img src="{A}/{f}.svg" width="{w}" alt="{html.escape(alt)}">'
     projects = " ".join(f'<a href="{r["url"]}">{img(f"project-{i + 1}", r["name"], "32%")}</a>' for i, r in enumerate(s["featured"]))
+    slug = lambda n: "".join(ch for ch in n.lower() if ch.isalnum())
+    tools = " ".join(f'<a href="{x["url"]}"><img src="{A}/tool-{slug(x["name"])}.svg" height="50" alt="{html.escape(x["name"])}"></a>' for x in cfg["toolbox"])
     views = (f'<img src="https://komarev.com/ghpvc/?username={cfg["login"].lower()}&label=visitors&color=7c3aed&style=flat-square" '
              f'alt="profile views">')
     return f"""<!-- generated by scripts/build.py from profile.json + live GitHub data; edit profile.json, not this file -->
@@ -379,11 +403,13 @@ def readme(cfg, s):
 
 {img("languages", "Languages I write in")}
 
-{img("calendar", "A year of commits, collected by a walking doodle robot")}
+{img("calendar", "Commit Invaders: a pixel ship shoots down every week with commits")}
 
 {projects}
 
-{img("toolbox", "Toolbox: " + ", ".join(cfg["toolbox"]))}
+{img("toolbox", "Toolbox")}
+
+{tools}
 
 <a href="{L['linkedin']}">{img("btn-linkedin", "LinkedIn", "200")}</a> <a href="mailto:{L['email']}">{img("btn-email", "Email", "200")}</a> <a href="{L['github']}">{img("btn-github", "GitHub", "200")}</a>
 
@@ -414,10 +440,12 @@ def main():
     s = summarize(d, cfg)
     os.makedirs(OUT, exist_ok=True)
     files = {"hero": hero(cfg, s), "now": now(cfg, s), "stats": stats(cfg, s), "languages": languages(cfg, s),
-             "calendar": calendar(cfg, s), "toolbox": toolbox(cfg, s),
+             "calendar": calendar(cfg, s), "toolbox": toolbox_header(cfg, s),
              "btn-linkedin": button("linkedin", "LinkedIn"), "btn-email": button("email", "Say hi"), "btn-github": button("github", "@SruSanCyborg")}
     for i, r in enumerate(s["featured"]):
         files[f"project-{i + 1}"] = project(cfg, r, i)
+    for i, x in enumerate(cfg["toolbox"]):
+        files["tool-" + "".join(ch for ch in x["name"].lower() if ch.isalnum())] = tool_chip(x["name"], i)
     for k, v in files.items():
         open(os.path.join(OUT, k + ".svg"), "w").write(v)
     open(os.path.join(ROOT, "README.md"), "w").write(readme(cfg, s))
