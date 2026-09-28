@@ -33,6 +33,10 @@
       "url": "https://pola.rs"
     },
     {
+      "name": "VAPT",
+      "url": "https://owasp.org/www-project-web-security-testing-guide/"
+    },
+    {
       "name": "TypeScript",
       "url": "https://www.typescriptlang.org"
     },
@@ -98,11 +102,12 @@
   "links": {
     "linkedin": "https://www.linkedin.com/in/sanjaysivakumar11/",
     "email": "sanjaysivakumar71@gmail.com",
-    "github": "https://github.com/SruSanCyborg"
+    "github": "https://github.com/SruSanCyborg",
+    "site": "http://srusan.com"
   },
   "site": "srusan.com",
   "terminal": [
     "Hi there! I'm Sanjay Sivakumar",
-    "AI developer · building @srusan"
+    "AI developer · VAPT · building @srusan"
   ]
 }

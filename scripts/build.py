@@ -102,7 +102,9 @@ def summarize(d, cfg):
             "langs": [(n, v[0] / tot, v[1]) for n, (v) in top],
             "weeks": [[c["contributionCount"] for c in w["contributionDays"]] for w in cal["weeks"]],
             "year_total": cal["totalContributions"], "featured": feat[:3],
-            "recent": [r["name"] for r in sorted(repos, key=lambda r: r["pushedAt"], reverse=True)]}
+            "recent": [r["name"] for r in sorted(repos, key=lambda r: r["pushedAt"], reverse=True)],
+            "recent_info": [{"name": r["name"], "lang": (r.get("primaryLanguage") or {}).get("name") or "code", "stars": r["stargazerCount"]}
+                            for r in sorted(repos, key=lambda r: r["pushedAt"], reverse=True)]}
 
 
 # ---------------------------------------------------------------- drawing helpers
@@ -182,6 +184,20 @@ def fontface(name, file):
     return f"@font-face{{font-family:'{name}';src:url(data:font/woff2;base64,{b64}) format('woff2');}}"
 
 
+def logo_b64(kind):
+    return base64.b64encode(open(os.path.join(ROOT, "assets", "brand", f"srusan-logo-{kind}.png"), "rb").read()).decode()
+
+
+def credit(cfg, s):
+    w, h = 330, 56
+    body = (f'<rect x="1.5" y="1.5" width="{w - 3}" height="{h - 3}" rx="28" fill="#050505" stroke="#3f3f46" stroke-width="2"/>'
+            f'<image href="data:image/png;base64,{logo_b64("white")}" x="22" y="17" width="45" height="22"/>'
+            f'<text x="82" y="27" font-size="13" class="mono" style="fill:#fafafa">custom-built by SruSan</text>'
+            f'<text x="82" y="43" font-size="11" class="mono" style="fill:#a1a1aa;letter-spacing:1px">srusan.com · redrawn daily</text>')
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="custom-built by SruSan">'
+            f'<title>custom-built by SruSan</title><style>{fontface("Mono", "mono.woff2")}.mono{{font-family:"Mono","Space Mono",monospace}}</style>{body}</svg>')
+
+
 def invader(x, y, px=3, color="#a78bfa", frame=0):
     a = ["..X.....X..", "...X...X...", "..XXXXXXX..", ".XX.XXX.XX.", "XXXXXXXXXXX", "X.XXXXXXX.X", "X.X.....X.X", "...XX.XX..."]
     b = ["..X.....X..", "X..X...X..X", "X.XXXXXXX.X", "XXX.XXX.XXX", "XXXXXXXXXXX", ".XXXXXXXXX.", "..X.....X..", ".X.......X."]
@@ -239,7 +255,16 @@ def hero(cfg, s):
         t0 += dur + 0.35
         y += 34 if i == 0 else 30 if i < 3 else 0
     css.append("@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}.cur{animation:blink 1s steps(1) infinite}")
-    body += f'<rect class="cur" x="44" y="{y + 12}" width="11" height="18" fill="#4ade80"/>'
+    rot = [r for r in s["recent_info"] if r["name"] not in shown][:4] or s["recent_info"][:4]
+    N, per = len(rot), 3.0
+    for k, r in enumerate(rot):
+        a, b = 100 * k / N, 100 * (k + 1) / N
+        css.append(f"@keyframes pr{k}{{0%,{max(a - .01, 0):.2f}%{{opacity:0}}{a:.2f}%,{b - 1:.2f}%{{opacity:1}}{b:.2f}%,100%{{opacity:0}}}}"
+                   f".pr{k}{{opacity:{1 if k == 0 else 0};animation:pr{k} {N * per:.0f}s linear {t0:.1f}s infinite}}")
+        star = f" · ★{r['stars']}" if r["stars"] else ""
+        line = f"> open {r['name']}" + (f" · {r['lang']}" if r["lang"] != "code" else "") + star
+        body += f'<text class="pr{k} mono" x="44" y="{y + 34}" font-size="15" style="fill:#fde047">{html.escape(line)}</text>'
+    body += f'<rect class="cur" x="44" y="{y + 48}" width="11" height="18" fill="#4ade80"/>'
     # SA monogram with morphing liquid blobs (after the LinkedIn banner)
     cx, cy = 690, 150
     blobs = [
@@ -252,8 +277,7 @@ def hero(cfg, s):
     body += (f'<circle cx="{cx}" cy="{cy}" r="72" fill="url(#lens)" stroke="#3f3f46" stroke-width="2"/>'
              f'<circle cx="{cx}" cy="{cy}" r="72" fill="none" stroke="#fafafa" stroke-opacity=".08" stroke-width="10"/>'
              f'<path d="M{cx - 30} {cy - 58} A64 64 0 0 1 {cx + 44} {cy - 44}" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="4" stroke-linecap="round"/>'
-             f'<text x="{cx - 6}" y="{cy + 20}" font-size="58" text-anchor="middle" style="fill:#fafafa;font-family:Arial Black,Helvetica Neue,Arial,sans-serif;font-weight:900">S</text>'
-             f'<path d="M{cx + 18} {cy + 20} L{cx + 38} {cy - 22} L{cx + 58} {cy + 20} Z" fill="#fafafa"/>')
+             f'<image href="data:image/png;base64,{logo_b64("white")}" x="{cx - 49}" y="{cy - 24}" width="98" height="48"/>')
     for k, (ix, iy, col, d) in enumerate(((470, 34, "#a78bfa", 0), (520, 276, "#f472b6", .6))):
         css.append(f"@keyframes bob{k}{{0%,100%{{transform:translateY(0)}}50%{{transform:translateY(-8px)}}}}.bob{k}{{animation:bob{k} 1.4s ease-in-out {d}s infinite}}")
         body += f'<g class="bob{k}">{invader(ix, iy, 2.6, col)}</g>'
@@ -477,7 +501,9 @@ def readme(cfg, s):
 
 {views}
 
-<sub>hand-drawn by SruSan · redrawn every day from live GitHub data by <a href="scripts/build.py">scripts/build.py</a></sub>
+<a href="{L.get('site', L['github'])}">{img("credit", "custom-built by SruSan", "330")}</a>
+
+<sub>redrawn every day from live GitHub data by <a href="scripts/build.py">scripts/build.py</a></sub>
 
 </div>
 """
@@ -503,7 +529,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     files = {"hero": hero(cfg, s), "now": now(cfg, s), "stats": stats(cfg, s), "languages": languages(cfg, s),
              "calendar": calendar(cfg, s), "toolbox": toolbox_header(cfg, s),
-             "btn-linkedin": button("linkedin", "LinkedIn"), "btn-email": button("email", "Say hi"), "btn-github": button("github", "@SruSanCyborg")}
+             "btn-linkedin": button("linkedin", "LinkedIn"), "btn-email": button("email", "Say hi"), "btn-github": button("github", "@SruSanCyborg"), "credit": credit(cfg, s)}
     for i, r in enumerate(s["featured"]):
         files[f"project-{i + 1}"] = project(cfg, r, i)
     for i, x in enumerate(cfg["toolbox"]):

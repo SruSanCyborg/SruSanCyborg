@@ -1,13 +1,13 @@
 {
- "total": 540,
- "streak": 3,
+ "total": 543,
+ "streak": 1,
  "longest": 8,
  "stars": 14,
  "repos": 20,
  "prs": 1,
  "issues": 1,
  "followers": 25,
- "commits_year": 258,
+ "commits_year": 259,
  "since": "2022",
  "langs": [
   [
@@ -36,7 +36,7 @@
    "#663399"
   ]
  ],
- "year_total": 479,
+ "year_total": 482,
  "recent": [
   "FINSEC_CLI_Sirius",
   "Finsec",
@@ -57,6 +57,103 @@
   "Hackathon_WeatherAPI",
   "Blender-Monster-Led",
   "blender-LED-Environment"
+ ],
+ "recent_info": [
+  {
+   "name": "FINSEC_CLI_Sirius",
+   "lang": "TypeScript",
+   "stars": 1
+  },
+  {
+   "name": "Finsec",
+   "lang": "code",
+   "stars": 4
+  },
+  {
+   "name": "googlegenai",
+   "lang": "JavaScript",
+   "stars": 1
+  },
+  {
+   "name": "RepIntelligence",
+   "lang": "code",
+   "stars": 0
+  },
+  {
+   "name": "Sams_ai_voice",
+   "lang": "TypeScript",
+   "stars": 0
+  },
+  {
+   "name": "mumz",
+   "lang": "Python",
+   "stars": 0
+  },
+  {
+   "name": "EduBridge",
+   "lang": "TypeScript",
+   "stars": 0
+  },
+  {
+   "name": "WomenSafety11",
+   "lang": "TypeScript",
+   "stars": 0
+  },
+  {
+   "name": "llm_guardrail",
+   "lang": "HTML",
+   "stars": 1
+  },
+  {
+   "name": "WomenSafety",
+   "lang": "code",
+   "stars": 0
+  },
+  {
+   "name": "Prompt_wars",
+   "lang": "HTML",
+   "stars": 0
+  },
+  {
+   "name": "GLITCHCON",
+   "lang": "code",
+   "stars": 0
+  },
+  {
+   "name": "CProgram",
+   "lang": "code",
+   "stars": 0
+  },
+  {
+   "name": "cyscom-hackathon-website",
+   "lang": "CSS",
+   "stars": 1
+  },
+  {
+   "name": "Hackathon_SodaPop",
+   "lang": "HTML",
+   "stars": 2
+  },
+  {
+   "name": "Hackathon_VenueBooking",
+   "lang": "HTML",
+   "stars": 1
+  },
+  {
+   "name": "Hackathon_WeatherAPI",
+   "lang": "JavaScript",
+   "stars": 1
+  },
+  {
+   "name": "Blender-Monster-Led",
+   "lang": "code",
+   "stars": 1
+  },
+  {
+   "name": "blender-LED-Environment",
+   "lang": "code",
+   "stars": 1
+  }
  ],
  "featured": [
   "Finsec",
