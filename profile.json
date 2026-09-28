@@ -1,7 +1,6 @@
 {
   "login": "SruSanCyborg",
   "name": "Sanjay Sivakumar",
-  "hello": "Sanjay Sivakumar",
   "taglines": [
     "AI developer & ML engineer",
     "Amazon ML Challenge 2026: 0.9857 entity resolution",
@@ -100,5 +99,10 @@
     "linkedin": "https://www.linkedin.com/in/sanjaysivakumar11/",
     "email": "sanjaysivakumar71@gmail.com",
     "github": "https://github.com/SruSanCyborg"
-  }
+  },
+  "site": "srusan.com",
+  "terminal": [
+    "Hi there! I'm Sanjay Sivakumar",
+    "AI developer · building @srusan"
+  ]
 }

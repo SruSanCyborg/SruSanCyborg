@@ -1,13 +1,13 @@
 {
- "total": 537,
- "streak": 3,
+ "total": 533,
+ "streak": 1,
  "longest": 8,
  "stars": 14,
  "repos": 20,
- "prs": 1,
+ "prs": 92,
  "issues": 1,
  "followers": 24,
- "commits_year": 256,
+ "commits_year": 253,
  "since": "2022",
  "langs": [
   [
@@ -36,7 +36,28 @@
    "#663399"
   ]
  ],
- "year_total": 476,
+ "year_total": 472,
+ "recent": [
+  "FINSEC_CLI_Sirius",
+  "Finsec",
+  "googlegenai",
+  "RepIntelligence",
+  "Sams_ai_voice",
+  "mumz",
+  "EduBridge",
+  "WomenSafety11",
+  "llm_guardrail",
+  "WomenSafety",
+  "Prompt_wars",
+  "GLITCHCON",
+  "CProgram",
+  "cyscom-hackathon-website",
+  "Hackathon_SodaPop",
+  "Hackathon_VenueBooking",
+  "Hackathon_WeatherAPI",
+  "Blender-Monster-Led",
+  "blender-LED-Environment"
+ ],
  "featured": [
   "Finsec",
   "FINSEC_CLI_Sirius",

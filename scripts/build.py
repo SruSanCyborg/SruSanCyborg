@@ -10,6 +10,7 @@ Standard library only. Text lives in profile.json; fonts (SIL OFL) are embedded 
 import argparse
 import base64
 import datetime as dt
+import hashlib
 import html
 import json
 import os
@@ -100,7 +101,8 @@ def summarize(d, cfg):
             "since": d["createdAt"][:4],
             "langs": [(n, v[0] / tot, v[1]) for n, (v) in top],
             "weeks": [[c["contributionCount"] for c in w["contributionDays"]] for w in cal["weeks"]],
-            "year_total": cal["totalContributions"], "featured": feat[:3]}
+            "year_total": cal["totalContributions"], "featured": feat[:3],
+            "recent": [r["name"] for r in sorted(repos, key=lambda r: r["pushedAt"], reverse=True)]}
 
 
 # ---------------------------------------------------------------- drawing helpers
@@ -175,45 +177,89 @@ def signature(x, y, size=34, rot=-7):
 
 # ---------------------------------------------------------------- sections
 
+def fontface(name, file):
+    b64 = base64.b64encode(open(os.path.join(ROOT, "fonts", file), "rb").read()).decode()
+    return f"@font-face{{font-family:'{name}';src:url(data:font/woff2;base64,{b64}) format('woff2');}}"
+
+
+def invader(x, y, px=3, color="#a78bfa", frame=0):
+    a = ["..X.....X..", "...X...X...", "..XXXXXXX..", ".XX.XXX.XX.", "XXXXXXXXXXX", "X.XXXXXXX.X", "X.X.....X.X", "...XX.XX..."]
+    b = ["..X.....X..", "X..X...X..X", "X.XXXXXXX.X", "XXX.XXX.XXX", "XXXXXXXXXXX", ".XXXXXXXXX.", "..X.....X..", ".X.......X."]
+    rows = a if frame == 0 else b
+    return "".join(f'<rect x="{x + c * px}" y="{y + r * px}" width="{px}" height="{px}" fill="{color}"/>'
+                   for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "X")
+
+
+def arcade_doc(w, h, body, css, title):
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{html.escape(title)}">'
+            f'<title>{html.escape(title)}</title><style>{fontface("Mono", "mono.woff2")}{fontface("MonoB", "monob.woff2")}'
+            f'{fontface("Pixel", "pixel.woff2")}'
+            ".mono{font-family:'Mono','Space Mono',monospace}.monob{font-family:'MonoB','Space Mono',monospace;font-weight:700}"
+            ".px{font-family:'Pixel','Press Start 2P',monospace}"
+            "@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}.star{animation:twinkle 2.2s ease-in-out infinite}"
+            f"{css}@media (prefers-reduced-motion: reduce){{*{{animation:none!important}}}}</style>"
+            '<defs><pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="#ffffff" opacity=".035"/></pattern>'
+            '<radialGradient id="blob" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#6b7280"/><stop offset=".35" stop-color="#1f2937"/>'
+            '<stop offset="1" stop-color="#000"/></radialGradient>'
+            '<radialGradient id="lens" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#3f3f46"/><stop offset="1" stop-color="#050505"/></radialGradient></defs>'
+            f'<rect width="{w}" height="{h}" rx="18" fill="#050505"/>{body}<rect width="{w}" height="{h}" rx="18" fill="url(#scan)"/>'
+            f'<rect x="1.5" y="1.5" width="{w - 3}" height="{h - 3}" rx="17" fill="none" stroke="#27272a" stroke-width="3"/></svg>')
+
+
+def stars(w, h, n=30, seed=7):
+    out = ""
+    for k in range(n):
+        sx, sy = (k * 97 + seed * 13) % (w - 40) + 20, (k * 53 + seed * 29) % (h - 40) + 20
+        out += f'<rect class="star" style="animation-delay:{(k % 9) * .27:.2f}s" x="{sx}" y="{sy}" width="2" height="2" fill="#e5e7eb"/>'
+    return out
+
+
 def hero(cfg, s):
-    h = 300
-    css = f"""
-.hello{{font-family:'Sign','Caveat',cursive;font-weight:700;fill:{INK};stroke:{INK};stroke-width:1;stroke-dasharray:1400;animation:hello 3s ease-out both}}
-@keyframes hello{{0%{{stroke-dashoffset:1400;fill-opacity:0}}65%{{fill-opacity:0}}100%{{stroke-dashoffset:0;fill-opacity:1}}}}
-.tag{{animation:cycle 9s infinite}}.tag1,.tag2{{opacity:0}}.tag1{{animation-delay:3s}}.tag2{{animation-delay:6s}}
-@keyframes cycle{{0%{{opacity:0;transform:translateY(8px)}}6%,30%{{opacity:1;transform:none}}36%,100%{{opacity:0}}}}
-.pulse{{stroke-dasharray:10 90;animation:pulse 2.4s linear infinite}}
-@keyframes pulse{{from{{stroke-dashoffset:100}}to{{stroke-dashoffset:0}}}}
-.node{{animation:glow 2.4s ease-in-out infinite}}
-@keyframes glow{{0%,100%{{fill:{PAPER}}}40%{{fill:#fde68a}}}}
-"""
-    b = f'<text x="52" y="112" font-size="70" class="hello">{html.escape(cfg["hello"])}</text>'
-    b += squiggle(54, 520, 134)
-    for i, tag in enumerate(cfg["taglines"][:3]):
-        b += (f'<g class="tag tag{i}" style="transform-box:fill-box">'
-              f'<rect x="52" y="160" width="{len(tag) * 11 + 40}" height="46" rx="10" fill="{NOTE[i]}" stroke="{INK}" stroke-width="2.3" filter="url(#wob)"/>'
-              f'{t(72, 191, tag, 22)}</g>')
-    b += t(54, 250, f"github.com/{cfg['login']}  ·  building with data, models and care", 17, MUTED)
-    # hand-drawn neural network: data -> models -> impact
-    layers = [(600, [70, 130, 190, 250]), (700, [100, 160, 220]), (800, [130, 190])]
-    for li in range(2):
-        (xa, ya), (xb, yb) = layers[li], layers[li + 1]
-        for i, y1 in enumerate(ya):
-            for j, y2 in enumerate(yb):
-                d = f"M{xa} {y1} C{xa + 45} {y1} {xb - 45} {y2} {xb} {y2}"
-                b += f'<path d="{d}" fill="none" stroke="#cbd5e1" stroke-width="2"/>'
-                delay = li * 0.8 + (i * 0.23 + j * 0.37) % 0.8
-                b += (f'<path d="{d}" pathLength="100" class="pulse" style="animation-delay:{delay:.2f}s" fill="none" '
-                      f'stroke="{PURPLE if li == 0 else AMBER}" stroke-width="3.2" stroke-linecap="round"/>')
-    for li, (x, ys) in enumerate(layers):
-        for k, y in enumerate(ys):
-            b += (f'<circle class="node" style="animation-delay:{li * 0.8 + 0.4:.1f}s" cx="{x}" cy="{y}" r="15" fill="{PAPER}" '
-                  f'stroke="{INK}" stroke-width="3" filter="url(#wob)"/>')
-    for x, lab in ((600, "data"), (700, "models"), (800, "impact")):
-        b += t(x, 286, lab, 17, MUTED, "middle")
-    b += spark(530, 40, 8, AMBER, 0) + spark(835, 60, 7, "#fb7185", .9) + spark(560, 270, 6, "#60a5fa", 1.7)
-    b += signature(452, 280, 24, -4)
-    return doc(h, b, css, sign=True, title=f"{cfg['name']}: " + "; ".join(cfg["taglines"]))
+    w, h = W, 330
+    lines = cfg["terminal"]
+    shown, used = [], 2
+    for r in s["recent"]:                      # repo names that fit left of the monogram
+        if used + len(r) + 3 > 54:
+            break
+        shown.append(r); used += len(r) + 3
+    specs = [(f"> {lines[0]}", 26, "#fafafa", "monob"), (f"> {lines[1]}", 18, "#4ade80", "mono"),
+             ("> ls ~/projects", 18, "#a1a1aa", "mono"), (" · ".join(shown), 15, "#67e8f9", "mono")]
+    css, body = [], stars(w, h, 34)
+    body += f'<text x="44" y="56" font-size="15" class="mono" style="fill:#d4d4d8;letter-spacing:6px">{html.escape(cfg.get("site", "").upper())}</text>'
+    t0, y = 0.4, 110
+    for i, (txt, size, col, cls) in enumerate(specs):
+        cw = size * 0.625
+        n = len(txt)
+        dur = max(0.6, n * 0.045)
+        width = n * cw + 4
+        vals = ";".join(f"{k * cw + (8 if k == n else 0):.1f}" for k in range(n + 1))
+        body += (f'<clipPath id="c{i}"><rect x="40" y="{y - size}" width="0" height="{size * 1.5}">'
+                 f'<animate attributeName="width" values="{vals}" calcMode="discrete" begin="{t0:.2f}s" dur="{dur:.2f}s" fill="freeze"/></rect></clipPath>'
+                 f'<text x="44" y="{y}" font-size="{size}" class="{cls}" clip-path="url(#c{i})" style="fill:{col}">{html.escape(txt)}</text>')
+        t0 += dur + 0.35
+        y += 34 if i == 0 else 30 if i < 3 else 0
+    css.append("@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}.cur{animation:blink 1s steps(1) infinite}")
+    body += f'<rect class="cur" x="44" y="{y + 12}" width="11" height="18" fill="#4ade80"/>'
+    # SA monogram with morphing liquid blobs (after the LinkedIn banner)
+    cx, cy = 690, 150
+    blobs = [
+        ("M612 96 C590 70 600 44 628 50 C652 56 650 84 636 96 C628 104 620 104 612 96 Z", "M608 98 C584 76 596 40 630 46 C660 52 654 88 638 100 C628 108 616 106 608 98 Z", 7),
+        ("M760 90 C770 60 808 54 816 80 C824 106 800 120 780 114 C766 110 756 104 760 90 Z", "M756 94 C764 56 812 50 820 82 C826 112 796 124 776 116 C760 110 752 106 756 94 Z", 9),
+        ("M748 212 C770 206 790 226 778 246 C766 264 740 256 736 238 C733 226 738 216 748 212 Z", "M744 208 C774 200 796 228 780 250 C764 270 734 258 732 236 C730 222 736 212 744 208 Z", 8),
+        ("M618 226 C604 226 596 240 606 250 C616 260 632 252 630 240 C629 232 625 226 618 226 Z", "M620 222 C600 224 592 244 606 254 C620 264 636 252 634 238 C632 228 628 222 620 222 Z", 6)]
+    for a, b, d in blobs:
+        body += (f'<path d="{a}" fill="url(#blob)" stroke="#52525b" stroke-width="1"><animate attributeName="d" values="{a};{b};{a}" dur="{d}s" repeatCount="indefinite"/></path>')
+    body += (f'<circle cx="{cx}" cy="{cy}" r="72" fill="url(#lens)" stroke="#3f3f46" stroke-width="2"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="72" fill="none" stroke="#fafafa" stroke-opacity=".08" stroke-width="10"/>'
+             f'<path d="M{cx - 30} {cy - 58} A64 64 0 0 1 {cx + 44} {cy - 44}" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="4" stroke-linecap="round"/>'
+             f'<text x="{cx - 6}" y="{cy + 20}" font-size="58" text-anchor="middle" style="fill:#fafafa;font-family:Arial Black,Helvetica Neue,Arial,sans-serif;font-weight:900">S</text>'
+             f'<path d="M{cx + 18} {cy + 20} L{cx + 38} {cy - 22} L{cx + 58} {cy + 20} Z" fill="#fafafa"/>')
+    for k, (ix, iy, col, d) in enumerate(((470, 34, "#a78bfa", 0), (520, 276, "#f472b6", .6))):
+        css.append(f"@keyframes bob{k}{{0%,100%{{transform:translateY(0)}}50%{{transform:translateY(-8px)}}}}.bob{k}{{animation:bob{k} 1.4s ease-in-out {d}s infinite}}")
+        body += f'<g class="bob{k}">{invader(ix, iy, 2.6, col)}</g>'
+    body += (f'<text x="{w - 44}" y="{h - 48}" font-size="21" class="mono" text-anchor="end" style="fill:#fafafa;letter-spacing:1px">_{html.escape(cfg["name"])}</text>'
+             f'<text x="{w - 44}" y="{h - 26}" font-size="12" class="mono" text-anchor="end" style="fill:#a1a1aa;letter-spacing:2px">{html.escape(cfg["links"]["email"])}</text>')
+    return arcade_doc(w, h, body, "".join(css), f"{cfg['name']}: " + "; ".join(lines))
 
 
 def now(cfg, s):
@@ -284,46 +330,61 @@ def pixel_ship(x, y, px=3, color="#f472b6"):
 
 def calendar(cfg, s):
     weeks = s["weeks"][-52:]
-    h = 270
-    T = 16.0
-    vals = sorted(v for w in weeks for v in w if v > 0)
+    w, h = W, 300
+    T = 18.0
+    vals = sorted(v for wk in weeks for v in wk if v > 0)
     q = [vals[int(len(vals) * f)] if vals else 1 for f in (.25, .5, .75)]
-    pal = ["#1b2447", "#166534", "#16a34a", "#22c55e", "#86efac"]
+    pal = ["#18181b", "#166534", "#16a34a", "#22c55e", "#86efac"]
     lvl = lambda v: 0 if v == 0 else 1 if v <= q[0] else 2 if v <= q[1] else 3 if v <= q[2] else 4
-    cell, gap, x0, y0 = 11.6, 3.1, 44, 78
-    n = len(weeks)
-    step = cell + gap
-    ship_y = 208
-    css = [f"@font-face{{font-family:'Pixel';src:url(data:font/woff2;base64,{base64.b64encode(open(os.path.join(ROOT, 'fonts', 'pixel.woff2'), 'rb').read()).decode()}) format('woff2');}}",
-           ".px{font-family:'Pixel','Press Start 2P',monospace}",
-           f".ship{{animation:fly {T}s linear infinite}}@keyframes fly{{from{{transform:translateX(0)}}to{{transform:translateX({n * step:.1f}px)}}}}",
-           ".star{animation:twinkle 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}"]
-    b = f'<rect x="10" y="10" width="{W - 20}" height="{h - 20}" rx="16" fill="#0b1026"/>'
-    for k in range(26):
-        sx, sy = (k * 97) % (W - 60) + 30, (k * 53) % (h - 60) + 24
-        b += f'<rect class="star" style="animation-delay:{(k % 7) * .3:.1f}s" x="{sx}" y="{sy}" width="2" height="2" fill="#e0e7ff" opacity=".7"/>'
-    b += (f'<text x="44" y="52" font-size="16" class="px" style="fill:#67e8f9">COMMIT INVADERS</text>'
-          f'<text x="{W - 44}" y="52" font-size="12" class="px" text-anchor="end" style="fill:#fde047">HI-SCORE {s["year_total"]:05d}</text>')
+    cell, gap, x0, y0 = 11.6, 3.1, 44, 112
+    n, step = len(weeks), cell + gap
+    ship_y = y0 + 7 * step + 34
+    css = [f".ship{{animation:fly {T}s linear infinite}}@keyframes fly{{from{{transform:translateX(0)}}to{{transform:translateX({n * step:.1f}px)}}}}",
+           "@keyframes march{0%,100%{transform:translateX(0)}50%{transform:translateX(60px)}}.march{animation:march 6s ease-in-out infinite}",
+           "@keyframes flipA{0%,49%{opacity:1}50%,100%{opacity:0}}@keyframes flipB{0%,49%{opacity:0}50%,100%{opacity:1}}"
+           ".fa{animation:flipA .8s steps(1) infinite}.fb{animation:flipB .8s steps(1) infinite}"]
+    body = stars(w, h, 26, 3)
+    body += (f'<text x="44" y="46" font-size="15" class="px" style="fill:#67e8f9">COMMIT INVADERS</text>'
+             f'<text x="{w - 44}" y="46" font-size="11" class="px" text-anchor="end" style="fill:#fde047">HI-SCORE {s["year_total"]:05d}</text>')
+    body += '<g class="march">' + "".join(
+        f'<g class="fa">{invader(90 + k * 130, 64, 2.2, c)}</g><g class="fb">{invader(90 + k * 130, 64, 2.2, c, 1)}</g>'
+        for k, c in enumerate(["#a78bfa", "#f472b6", "#67e8f9", "#fde047", "#4ade80"])) + "</g>"
+    score, hits = 0, []
     for i, wk in enumerate(weeks):
         colx = x0 + i * step
         p = 100 * (i + 0.5) / n
-        hit = any(v > 0 for v in wk)
-        if hit:
-            a, b2, c2 = max(p - 0.3, 0), min(p + 0.8, 100), min(p + 4, 100)
-            css.append(f"@keyframes lz{i}{{0%,{a:.2f}%{{opacity:0}}{a + 0.01:.2f}%,{b2:.2f}%{{opacity:1}}{b2 + 0.01:.2f}%,100%{{opacity:0}}}}"
+        live = [(j, v) for j, v in enumerate(wk) if v > 0]
+        if live:
+            a, b2, c2 = max(p - 0.3, 0), min(p + 0.9, 100), min(p + 5, 100)
+            css.append(f"@keyframes lz{i}{{0%,{a:.2f}%{{opacity:0}}{a + .01:.2f}%,{b2:.2f}%{{opacity:1}}{b2 + .01:.2f}%,100%{{opacity:0}}}}"
                        f".lz{i}{{opacity:0;animation:lz{i} {T}s linear infinite}}"
-                       f"@keyframes h{i}{{0%,{b2:.2f}%{{transform:scale(1);opacity:1}}{b2 + 0.4:.2f}%{{transform:scale(.15);opacity:.15}}{c2:.2f}%,100%{{transform:scale(1);opacity:1}}}}"
+                       f"@keyframes h{i}{{0%,{b2:.2f}%{{transform:scale(1);opacity:1}}{b2 + .4:.2f}%{{transform:scale(.15);opacity:.1}}{c2 - 1:.2f}%{{transform:scale(.15);opacity:.1}}{c2:.2f}%,100%{{transform:scale(1);opacity:1}}}}"
                        f".h{i}{{transform-box:fill-box;transform-origin:center;animation:h{i} {T}s linear infinite}}")
-            b += f'<rect class="lz{i}" x="{colx + cell / 2 - 1:.1f}" y="{y0:.1f}" width="2" height="{ship_y - y0:.1f}" fill="#fde047"/>'
+            for k2, (dx, dy) in enumerate(((-9, -9), (9, -9), (-9, 9), (9, 9))):
+                css.append(f"@keyframes sp{i}_{k2}{{0%,{b2:.2f}%{{opacity:0;transform:translate(0,0)}}{b2 + .1:.2f}%{{opacity:1}}{b2 + 1.6:.2f}%{{opacity:0;transform:translate({dx}px,{dy}px)}}100%{{opacity:0}}}}"
+                           f".sp{i}_{k2}{{opacity:0;animation:sp{i}_{k2} {T}s linear infinite}}")
+            body += f'<rect class="lz{i}" x="{colx + cell / 2 - 1:.1f}" y="{y0:.1f}" width="2" height="{ship_y - y0:.1f}" fill="#fde047"/>'
+            score += sum(v for _, v in live)
+            hits.append((b2, score))
         for j, v in enumerate(wk):
             L = lvl(v)
-            cls = f' class="h{i}"' if L else ""
-            b += f'<rect{cls} x="{colx:.1f}" y="{y0 + j * step:.1f}" width="{cell}" height="{cell}" rx="2" fill="{pal[L]}"/>'
-    b += f'<g class="ship">{pixel_ship(x0 + cell / 2 - 13.5, ship_y, 3)}</g>'
-    b += (f'<rect x="30" y="{h - 34}" width="{W - 60}" height="2" fill="#312e81"/>'
-          f'<text x="44" y="{h - 16}" font-size="9" class="px" style="fill:#a5b4fc">1UP {cfg["login"].upper()}</text>'
-          f'<text x="{W - 44}" y="{h - 16}" font-size="9" class="px" text-anchor="end" style="fill:#a5b4fc">{s["total"]} COMMITS SHOT DOWN SINCE {s["since"]}</text>')
-    return doc(h, b, "".join(css), title=f"Commit Invaders: {s['year_total']} contributions in the last year")
+            hc = f' class="h{i}"' if L else ""
+            body += f'<rect{hc} x="{colx:.1f}" y="{y0 + j * step:.1f}" width="{cell}" height="{cell}" rx="2" fill="{pal[L]}"/>'
+            if L:
+                for k2 in range(4):
+                    body += f'<rect class="sp{i}_{k2}" x="{colx + cell / 2 - 1.5:.1f}" y="{y0 + j * step + cell / 2 - 1.5:.1f}" width="3" height="3" fill="#fde047"/>'
+    # live score: one text per hit, visible from its hit until the next
+    marks = [(0.0, 0)] + hits
+    for k, (start, val) in enumerate(marks):
+        end = marks[k + 1][0] if k + 1 < len(marks) else 100
+        css.append(f"@keyframes sc{k}{{0%,{max(start - .01, 0):.2f}%{{opacity:0}}{start:.2f}%,{max(end - .01, start):.2f}%{{opacity:1}}{end:.2f}%,100%{{opacity:0}}}}"
+                   f".sc{k}{{opacity:0;animation:sc{k} {T}s linear infinite}}")
+        body += f'<text class="sc{k} px" x="44" y="{h - 18}" font-size="10" style="fill:#fafafa">SCORE {val:05d}</text>'
+    body += f'<g class="ship">{pixel_ship(x0 + cell / 2 - 13.5, ship_y, 3)}</g>'
+    body += (f'<rect x="30" y="{h - 40}" width="{w - 60}" height="2" fill="#27272a"/>'
+             f'<text x="{w - 44}" y="{h - 18}" font-size="10" class="px" text-anchor="end" style="fill:#a1a1aa">{s["total"]} COMMITS SINCE {s["since"]} · 1UP SRUSAN</text>')
+    return arcade_doc(w, h, body, "".join(css), f"Commit Invaders: {s['year_total']} contributions in the last year")
+
 
 
 def project(cfg, r, i):
@@ -386,16 +447,17 @@ def button(kind, label):
 def readme(cfg, s):
     L = cfg["links"]
     A = "assets/sketchbook"
-    img = lambda f, alt, w="100%": f'<img src="{A}/{f}.svg" width="{w}" alt="{html.escape(alt)}">'
+    ver = lambda f: hashlib.sha1(open(os.path.join(OUT, f + ".svg"), "rb").read()).hexdigest()[:10]
+    img = lambda f, alt, w="100%": f'<img src="{A}/{f}.svg?v={ver(f)}" width="{w}" alt="{html.escape(alt)}">'
     projects = " ".join(f'<a href="{r["url"]}">{img(f"project-{i + 1}", r["name"], "32%")}</a>' for i, r in enumerate(s["featured"]))
     slug = lambda n: "".join(ch for ch in n.lower() if ch.isalnum())
-    tools = " ".join(f'<a href="{x["url"]}"><img src="{A}/tool-{slug(x["name"])}.svg" height="50" alt="{html.escape(x["name"])}"></a>' for x in cfg["toolbox"])
+    tools = " ".join(f'<a href="{x["url"]}"><img src="{A}/tool-{slug(x["name"])}.svg?v={ver("tool-" + slug(x["name"]))}" height="50" alt="{html.escape(x["name"])}"></a>' for x in cfg["toolbox"])
     views = (f'<img src="https://komarev.com/ghpvc/?username={cfg["login"].lower()}&label=visitors&color=7c3aed&style=flat-square" '
              f'alt="profile views">')
     return f"""<!-- generated by scripts/build.py from profile.json + live GitHub data; edit profile.json, not this file -->
 <div align="center">
 
-{img("hero", f"Hi, I'm {cfg['name']} (SruSan)")}
+{img("hero", f"Hi there! I'm {cfg['name']} (SruSan)")}
 
 {img("now", "Right now: " + "; ".join(f"{k}: {v}" for k, v in cfg["now"].items()))}
 
