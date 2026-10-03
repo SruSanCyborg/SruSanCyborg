@@ -1,5 +1,5 @@
 {
- "total": 588,
+ "total": 596,
  "streak": 8,
  "longest": 8,
  "stars": 14,
@@ -7,38 +7,38 @@
  "prs": 1,
  "issues": 1,
  "followers": 25,
- "commits_year": 273,
+ "commits_year": 274,
  "since": "2022",
  "langs": [
   [
    "TypeScript",
-   0.6363055134303026,
+   0.6362546900013172,
    "#3178c6"
   ],
   [
    "HTML",
-   0.15048235546639455,
+   0.15050644876022884,
    "#e34c26"
   ],
   [
    "JavaScript",
-   0.12383396985779933,
+   0.12384835871166482,
    "#f1e05a"
   ],
   [
    "Python",
-   0.06663887342575663,
+   0.06665034307819241,
    "#3572A5"
   ],
   [
    "CSS",
-   0.012610913748578357,
+   0.012613339173191388,
    "#663399"
   ]
  ],
- "year_total": 527,
+ "year_total": 535,
  "recent": [
-  "FINSEC_CLI_Sirius",
+  "FINSEC_CLI_Sirus",
   "Finsec",
   "googlegenai",
   "RepIntelligence",
@@ -60,7 +60,7 @@
  ],
  "recent_info": [
   {
-   "name": "FINSEC_CLI_Sirius",
+   "name": "FINSEC_CLI_Sirus",
    "lang": "TypeScript",
    "stars": 1
   },
@@ -157,7 +157,7 @@
  ],
  "featured": [
   "Finsec",
-  "FINSEC_CLI_Sirius",
+  "FINSEC_CLI_Sirus",
   "llm_guardrail"
  ]
 }
