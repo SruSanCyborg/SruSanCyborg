@@ -1,42 +1,42 @@
 {
- "total": 604,
+ "total": 624,
  "streak": 9,
  "longest": 9,
- "stars": 14,
+ "stars": 19,
  "repos": 20,
  "prs": 1,
  "issues": 1,
- "followers": 25,
- "commits_year": 279,
+ "followers": 26,
+ "commits_year": 287,
  "since": "2022",
  "langs": [
   [
    "TypeScript",
-   0.6345292455582437,
+   0.6388538604440237,
    "#3178c6"
   ],
   [
    "HTML",
-   0.15009829378747802,
+   0.14817841036718207,
    "#e34c26"
   ],
   [
    "JavaScript",
-   0.12487206226759658,
+   0.12344536689699251,
    "#f1e05a"
   ],
   [
    "Python",
-   0.06646959554752514,
+   0.0656193935150746,
    "#3572A5"
   ],
   [
    "CSS",
-   0.01257913334912911,
+   0.01241823565369708,
    "#663399"
   ]
  ],
- "year_total": 543,
+ "year_total": 563,
  "recent": [
   "FINSEC_CLI_Sirus",
   "Finsec",
@@ -62,17 +62,17 @@
   {
    "name": "FINSEC_CLI_Sirus",
    "lang": "TypeScript",
-   "stars": 1
+   "stars": 2
   },
   {
    "name": "Finsec",
    "lang": "code",
-   "stars": 4
+   "stars": 5
   },
   {
    "name": "googlegenai",
    "lang": "JavaScript",
-   "stars": 1
+   "stars": 2
   },
   {
    "name": "RepIntelligence",
@@ -102,12 +102,12 @@
   {
    "name": "llm_guardrail",
    "lang": "HTML",
-   "stars": 1
+   "stars": 2
   },
   {
    "name": "WomenSafety",
    "lang": "code",
-   "stars": 0
+   "stars": 1
   },
   {
    "name": "Prompt_wars",
