@@ -5,11 +5,11 @@
 
 <img src="assets/sketchbook/now.svg?v=054137b2d5" width="100%" alt="Right now: building: ML methodology skills for AI coding agents; learning: Docker &amp; RAG; ask me about: AI governance · entity resolution">
 
-<img src="assets/sketchbook/stats.svg?v=c347f35f75" width="100%" alt="1647 contributions, current streak 31 days, longest 31 days, 19 stars">
+<img src="assets/sketchbook/stats.svg?v=762aa06ec3" width="100%" alt="1704 contributions, current streak 33 days, longest 33 days, 19 stars">
 
 <img src="assets/sketchbook/languages.svg?v=70052c060c" width="100%" alt="Languages I write in">
 
-<img src="assets/sketchbook/calendar.svg?v=aab243b216" width="100%" alt="Commit Invaders: a pixel ship shoots down every week with commits">
+<img src="assets/sketchbook/calendar.svg?v=56162336f9" width="100%" alt="Commit Invaders: a pixel ship shoots down every week with commits">
 
 <a href="https://github.com/SruSanCyborg/Finsec"><img src="assets/sketchbook/project-1.svg?v=3314b8915f" width="32%" alt="Finsec"></a> <a href="https://github.com/SruSanCyborg/FINSEC_CLI_Sirus"><img src="assets/sketchbook/project-2.svg?v=31a9bfda4a" width="32%" alt="FINSEC_CLI_Sirus"></a> <a href="https://github.com/SruSanCyborg/llm_guardrail"><img src="assets/sketchbook/project-3.svg?v=f8bce585f6" width="32%" alt="llm_guardrail"></a>
 
